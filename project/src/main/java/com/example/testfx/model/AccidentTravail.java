@@ -6,12 +6,12 @@ import java.util.Map;
 /**
  * Représente une ligne du fichier Assurance Maladie :
  * les statistiques AT pour un croisement (CTN × Code NAF) sur une année donnée.
- * <p>
+ *
  * Chaque instance = 1 ligne = 1 couple (secteur d'activité, activité NAF) pour 1 année.
  */
 public class AccidentTravail {
 
-    // Identifiants sectoriels
+    // ── Identifiants sectoriels ──
     private String codeCTN;          // ex: "AA"
     private String libelleCTN;       // ex: "Métallurgie"
     private String codeNAF;          // ex: "2550A" (5 caractères)
@@ -21,10 +21,10 @@ public class AccidentTravail {
     private String codeNAF38;        // ex: "CH" (agrégé)
     private String libelleNAF38;     // ex: "Métallurgie et fabrication de produits métalliques..."
 
-    // Année
+    // ── Année ──
     private int annee;
 
-    // Indicateurs principaux
+    // ── Indicateurs principaux ──
     private int nombreSalaries;
     private long heuresTravaillees;
     private int nombreSIRET;
@@ -41,36 +41,11 @@ public class AccidentTravail {
     // Causes d'accidents (répartition par risque)
     private final Map<CauseAccident, Integer> causes;
 
-    // Constructeur
     public AccidentTravail() {
         this.causes = new EnumMap<>(CauseAccident.class);
     }
 
-    // Méthodes utilitaires
-
-    /**
-     * Indice de fréquence : nombre d'AT pour 1 000 salariés.
-     */
-    public double getIndiceFrequence() {
-        if (nombreSalaries == 0) return 0;
-        return (double) atPremierReglement / nombreSalaries * 1000;
-    }
-
-    /**
-     * Taux de fréquence : nombre d'AT pour 1 million d'heures travaillées.
-     */
-    public double getTauxFrequence() {
-        if (heuresTravaillees == 0) return 0;
-        return (double) atPremierReglement / heuresTravaillees * 1_000_000;
-    }
-
-    /**
-     * Taux de gravité : nombre de journées d'IT pour 1 000 heures travaillées.
-     */
-    public double getTauxGravite() {
-        if (heuresTravaillees == 0) return 0;
-        return (double) journeesIT / heuresTravaillees * 1000;
-    }
+    // Accès aux causes
 
     /**
      * Retourne le nombre d'accidents pour une cause donnée.
@@ -83,179 +58,72 @@ public class AccidentTravail {
         causes.put(cause, valeur);
     }
 
-    // Getters / Setters
+    // ── Getters / Setters ──
 
-    public String getCodeCTN() {
-        return codeCTN;
-    }
+    public String getCodeCTN() { return codeCTN; }
+    public void setCodeCTN(String codeCTN) { this.codeCTN = codeCTN; }
 
-    public void setCodeCTN(String codeCTN) {
-        this.codeCTN = codeCTN;
-    }
+    public String getLibelleCTN() { return libelleCTN; }
+    public void setLibelleCTN(String libelleCTN) { this.libelleCTN = libelleCTN; }
 
-    public String getLibelleCTN() {
-        return libelleCTN;
-    }
+    public String getCodeNAF() { return codeNAF; }
+    public void setCodeNAF(String codeNAF) { this.codeNAF = codeNAF; }
 
-    public void setLibelleCTN(String libelleCTN) {
-        this.libelleCTN = libelleCTN;
-    }
+    public String getLibelleNAF() { return libelleNAF; }
+    public void setLibelleNAF(String libelleNAF) { this.libelleNAF = libelleNAF; }
 
-    public String getCodeNAF() {
-        return codeNAF;
-    }
+    public String getCodeNAF2() { return codeNAF2; }
+    public void setCodeNAF2(String codeNAF2) { this.codeNAF2 = codeNAF2; }
 
-    public void setCodeNAF(String codeNAF) {
-        this.codeNAF = codeNAF;
-    }
+    public String getLibelleNAF2() { return libelleNAF2; }
+    public void setLibelleNAF2(String libelleNAF2) { this.libelleNAF2 = libelleNAF2; }
 
-    public String getLibelleNAF() {
-        return libelleNAF;
-    }
+    public String getCodeNAF38() { return codeNAF38; }
+    public void setCodeNAF38(String codeNAF38) { this.codeNAF38 = codeNAF38; }
 
-    public void setLibelleNAF(String libelleNAF) {
-        this.libelleNAF = libelleNAF;
-    }
+    public String getLibelleNAF38() { return libelleNAF38; }
+    public void setLibelleNAF38(String libelleNAF38) { this.libelleNAF38 = libelleNAF38; }
 
-    public String getCodeNAF2() {
-        return codeNAF2;
-    }
+    public int getAnnee() { return annee; }
+    public void setAnnee(int annee) { this.annee = annee; }
 
-    public void setCodeNAF2(String codeNAF2) {
-        this.codeNAF2 = codeNAF2;
-    }
+    public int getNombreSalaries() { return nombreSalaries; }
+    public void setNombreSalaries(int nombreSalaries) { this.nombreSalaries = nombreSalaries; }
 
-    public String getLibelleNAF2() {
-        return libelleNAF2;
-    }
+    public long getHeuresTravaillees() { return heuresTravaillees; }
+    public void setHeuresTravaillees(long heuresTravaillees) { this.heuresTravaillees = heuresTravaillees; }
 
-    public void setLibelleNAF2(String libelleNAF2) {
-        this.libelleNAF2 = libelleNAF2;
-    }
+    public int getNombreSIRET() { return nombreSIRET; }
+    public void setNombreSIRET(int nombreSIRET) { this.nombreSIRET = nombreSIRET; }
 
-    public String getCodeNAF38() {
-        return codeNAF38;
-    }
+    public int getAtPremierReglement() { return atPremierReglement; }
+    public void setAtPremierReglement(int atPremierReglement) { this.atPremierReglement = atPremierReglement; }
 
-    public void setCodeNAF38(String codeNAF38) {
-        this.codeNAF38 = codeNAF38;
-    }
+    public int getAtAvec4JoursArret() { return atAvec4JoursArret; }
+    public void setAtAvec4JoursArret(int atAvec4JoursArret) { this.atAvec4JoursArret = atAvec4JoursArret; }
 
-    public String getLibelleNAF38() {
-        return libelleNAF38;
-    }
+    public int getNouvellesIP() { return nouvellesIP; }
+    public void setNouvellesIP(int nouvellesIP) { this.nouvellesIP = nouvellesIP; }
 
-    public void setLibelleNAF38(String libelleNAF38) {
-        this.libelleNAF38 = libelleNAF38;
-    }
+    public int getIpTauxInferieur10() { return ipTauxInferieur10; }
+    public void setIpTauxInferieur10(int ipTauxInferieur10) { this.ipTauxInferieur10 = ipTauxInferieur10; }
 
-    public int getAnnee() {
-        return annee;
-    }
+    public int getIpTauxSuperieur10() { return ipTauxSuperieur10; }
+    public void setIpTauxSuperieur10(int ipTauxSuperieur10) { this.ipTauxSuperieur10 = ipTauxSuperieur10; }
 
-    public void setAnnee(int annee) {
-        this.annee = annee;
-    }
+    public int getDeces() { return deces; }
+    public void setDeces(int deces) { this.deces = deces; }
 
-    public int getNombreSalaries() {
-        return nombreSalaries;
-    }
+    public int getJourneesIT() { return journeesIT; }
+    public void setJourneesIT(int journeesIT) { this.journeesIT = journeesIT; }
 
-    public void setNombreSalaries(int nombreSalaries) {
-        this.nombreSalaries = nombreSalaries;
-    }
+    public double getSommeTauxIPInf10() { return sommeTauxIPInf10; }
+    public void setSommeTauxIPInf10(double sommeTauxIPInf10) { this.sommeTauxIPInf10 = sommeTauxIPInf10; }
 
-    public long getHeuresTravaillees() {
-        return heuresTravaillees;
-    }
+    public double getSommeTauxIP() { return sommeTauxIP; }
+    public void setSommeTauxIP(double sommeTauxIP) { this.sommeTauxIP = sommeTauxIP; }
 
-    public void setHeuresTravaillees(long heuresTravaillees) {
-        this.heuresTravaillees = heuresTravaillees;
-    }
-
-    public int getNombreSIRET() {
-        return nombreSIRET;
-    }
-
-    public void setNombreSIRET(int nombreSIRET) {
-        this.nombreSIRET = nombreSIRET;
-    }
-
-    public int getAtPremierReglement() {
-        return atPremierReglement;
-    }
-
-    public void setAtPremierReglement(int atPremierReglement) {
-        this.atPremierReglement = atPremierReglement;
-    }
-
-    public int getAtAvec4JoursArret() {
-        return atAvec4JoursArret;
-    }
-
-    public void setAtAvec4JoursArret(int atAvec4JoursArret) {
-        this.atAvec4JoursArret = atAvec4JoursArret;
-    }
-
-    public int getNouvellesIP() {
-        return nouvellesIP;
-    }
-
-    public void setNouvellesIP(int nouvellesIP) {
-        this.nouvellesIP = nouvellesIP;
-    }
-
-    public int getIpTauxInferieur10() {
-        return ipTauxInferieur10;
-    }
-
-    public void setIpTauxInferieur10(int ipTauxInferieur10) {
-        this.ipTauxInferieur10 = ipTauxInferieur10;
-    }
-
-    public int getIpTauxSuperieur10() {
-        return ipTauxSuperieur10;
-    }
-
-    public void setIpTauxSuperieur10(int ipTauxSuperieur10) {
-        this.ipTauxSuperieur10 = ipTauxSuperieur10;
-    }
-
-    public int getDeces() {
-        return deces;
-    }
-
-    public void setDeces(int deces) {
-        this.deces = deces;
-    }
-
-    public int getJourneesIT() {
-        return journeesIT;
-    }
-
-    public void setJourneesIT(int journeesIT) {
-        this.journeesIT = journeesIT;
-    }
-
-    public double getSommeTauxIPInf10() {
-        return sommeTauxIPInf10;
-    }
-
-    public void setSommeTauxIPInf10(double sommeTauxIPInf10) {
-        this.sommeTauxIPInf10 = sommeTauxIPInf10;
-    }
-
-    public double getSommeTauxIP() {
-        return sommeTauxIP;
-    }
-
-    public void setSommeTauxIP(double sommeTauxIP) {
-        this.sommeTauxIP = sommeTauxIP;
-    }
-
-    public Map<CauseAccident, Integer> getCauses() {
-        return causes;
-    }
+    public Map<CauseAccident, Integer> getCauses() { return causes; }
 
     @Override
     public String toString() {

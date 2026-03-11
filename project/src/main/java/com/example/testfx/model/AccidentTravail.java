@@ -5,7 +5,7 @@ import java.util.Map;
 
 /**
  * Représente une ligne du fichier Assurance Maladie :
- * les statistiques AT pour un croisement (CTN × Code NAF) sur une année donnée.
+ * les statistiques AT pour un croisement (CTN - Code NAF) sur une année donnée.
  *
  * Chaque instance = 1 ligne = 1 couple (secteur d'activité, activité NAF) pour 1 année.
  */

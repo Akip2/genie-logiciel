@@ -2,7 +2,7 @@ package com.example.testfx.model;
 
 /**
  * Enumération des causes d'accidents du travail.
- * <p>
+ * Chaque cause correspond à une colonne dans les fichiers Excel de l'Assurance Maladie.
  * Résout le problème de l'ordre des colonnes qui change entre les années :
  * on mappe par NOM de colonne et non par position.
  */

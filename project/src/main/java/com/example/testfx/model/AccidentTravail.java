@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class AccidentTravail {
 
-    // ── Identifiants sectoriels ──
+    // Identifiants sectoriels
     private String codeCTN;          // ex: "AA"
     private String libelleCTN;       // ex: "Métallurgie"
     private String codeNAF;          // ex: "2550A" (5 caractères)
@@ -21,10 +21,10 @@ public class AccidentTravail {
     private String codeNAF38;        // ex: "CH" (agrégé)
     private String libelleNAF38;     // ex: "Métallurgie et fabrication de produits métalliques..."
 
-    // ── Année ──
+    // Année
     private int annee;
 
-    // ── Indicateurs principaux ──
+    // Indicateurs principaux
     private int nombreSalaries;
     private long heuresTravaillees;
     private int nombreSIRET;
@@ -58,7 +58,7 @@ public class AccidentTravail {
         causes.put(cause, valeur);
     }
 
-    // ── Getters / Setters ──
+    // Getters / Setters
 
     public String getCodeCTN() { return codeCTN; }
     public void setCodeCTN(String codeCTN) { this.codeCTN = codeCTN; }

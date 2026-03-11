@@ -27,7 +27,7 @@
     </dependencyManagement>
 
     <dependencies>
-    <!-- Source: https://mvnrepository.com/artifact/org.openjfx/javafx-base -->
+        <!-- Source: https://mvnrepository.com/artifact/org.openjfx/javafx-base -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-base</artifactId>
@@ -64,6 +64,12 @@
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.6.3</version>
             <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.5.0</version>
         </dependency>
     </dependencies>
 

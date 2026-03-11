@@ -79,7 +79,7 @@ public class ExcelParser {
     }
 
     /**
-     * Convertit une ligne Excel en objet AccidentTravail.
+     * Convertit une ligne Excel en objet AccidentTravail
      * Accède aux valeurs PAR NOM de colonne, jamais par position.
      */
     private AccidentTravail mapRow(Object[] row, Map<String, Integer> colMap, int annee) {
@@ -125,9 +125,7 @@ public class ExcelParser {
         return at;
     }
 
-    /**
-     * Construit la map nom_colonne -> index depuis la ligne d'en-tête.
-     */
+    // Construit la map nom_colonne -> index depuis la ligne d'en-tête
     private Map<String, Integer> buildColumnMap(Row headerRow) {
         Map<String, Integer> map = new HashMap<>();
         for (int i = 0; i < headerRow.getLastCellNum(); i++) {
@@ -154,9 +152,7 @@ public class ExcelParser {
         return null;
     }
 
-    /**
-     * Extrait l'année depuis le nom du fichier.
-     */
+    // Extrait l'année depuis le nom du fichier
     private int extractAnnee(String cheminFichier) {
         String nom = cheminFichier.replaceAll(".*[/\\\\]", "").replaceAll("\\.[^.]+$", "");
         try {

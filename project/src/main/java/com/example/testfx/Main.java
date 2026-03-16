@@ -1,5 +1,6 @@
 package com.example.testfx;
 
+import com.example.testfx.data.DataRepository;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -7,13 +8,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class Main extends Application {
 
@@ -25,6 +27,10 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+
+        // chargement des données
+        DataRepository dataRepository = new DataRepository();
+        dataRepository.chargerDossier("data");
 
         BorderPane root = new BorderPane();
         root.setStyle("-fx-background-color: #F0F4F8;");
@@ -49,29 +55,87 @@ public class Main extends Application {
         header.getChildren().add(titre);
 
         // GAUCHE
-        // TODO
+        // TODO ?
 
         // CENTRE
         // TODO
 
 
         // DROITE
-        // TODO : menu d'option (choix annee, choix secteur, ...)
         VBox menu = new VBox();
-        // trbl : top, right, bottom, left
         menu.setPadding(new Insets(10, 20, 10, 20));
 
-        Label titreMenu = new Label("Menu de selection");
+        // titre du menu
+        Label titreMenu = new Label("Filtres disponibles");
+        titreMenu.setStyle("-fx-font-size: 24px;");
 
-        ComboBox<String> comboAnnee = new ComboBox<>();
-        comboAnnee.getItems().addAll("2020", "2021", "2023");
+        // F1 : liste de choix de l'année
+        HBox annee = new HBox();
+        Label anneeLabel = new Label("Année : ");
+
+        Region spacerF1 = new Region();
+        HBox.setHgrow(spacerF1, Priority.ALWAYS);
+
+        ComboBox<Integer> comboAnnee = new ComboBox<>();
+        List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
+        comboAnnee.getItems().addAll(anneesDispo);
+        comboAnnee.setValue(anneesDispo.getLast());
         comboAnnee.setPromptText("Choisir une année");
 
+        annee.getChildren().addAll(anneeLabel, spacerF1, comboAnnee);
+        annee.setAlignment(Pos.CENTER);
+
+        // F2 : liste de choix du secteur
+        HBox secteur = new HBox();
+        Label secteurLabel = new Label("Secteur : ");
+
+        Region spacerF2 = new Region();
+        HBox.setHgrow(spacerF2, Priority.ALWAYS);
+
         ComboBox<String> comboSecteur = new ComboBox<>();
-        comboSecteur.getItems().addAll("Secteur 1", "Secteur 2", "Secteur 3", "Secteur 4", "Secteur 5");
+        List<String> CTNDispo = dataRepository.getListeCTN();
+        comboSecteur.getItems().addAll(CTNDispo);
+        comboSecteur.setValue(comboSecteur.getItems().getFirst());
         comboSecteur.setPromptText("Choisir un secteur");
 
-        menu.getChildren().addAll(titreMenu, comboAnnee, comboSecteur);
+        secteur.getChildren().addAll(secteurLabel, spacerF2, comboSecteur);
+        secteur.setAlignment(Pos.CENTER);
+
+        // F3 : liste de choix du niveau NAF
+        HBox niveauNAF = new HBox();
+        Label niveauNAFLabel = new Label("Niveau NAF : ");
+
+        Region spacerF3 = new Region();
+        HBox.setHgrow(spacerF3, Priority.ALWAYS);
+
+        ComboBox<String> comboNAF = new ComboBox<>();
+        List<String> NAFDispo = Arrays.asList("CTN", "NAF38", "NAF2");
+        comboNAF.getItems().addAll(NAFDispo);
+        comboNAF.setValue(comboNAF.getItems().getFirst());
+        comboNAF.setPromptText("Choisir un niveau NAF");
+
+        niveauNAF.getChildren().addAll(niveauNAFLabel, spacerF3, comboNAF);
+        niveauNAF.setAlignment(Pos.CENTER);
+
+        // F4 : liste de choix de l'indicateur
+        HBox indicateur = new HBox();
+        Label indicateurLabel = new Label("Indicateur : ");
+
+        Region spacerF4 = new Region();
+        HBox.setHgrow(spacerF4, Priority.ALWAYS);
+
+        ComboBox<String> comboIndicateur = new ComboBox<>();
+        List<String> indicateurs = Arrays.asList("atPremierReglement", "nombreSalaries", "heuresTravaillees", "journeesIT", "deces", "nouvellesIP", "indiceFrequence", "tauxGravite");
+        comboIndicateur.getItems().addAll(indicateurs);
+        comboIndicateur.setValue(comboIndicateur.getItems().getFirst());
+        comboIndicateur.setPromptText("Choisir un indicateur");
+
+        indicateur.getChildren().addAll(indicateurLabel, spacerF4, comboIndicateur);
+        indicateur.setAlignment(Pos.CENTER);
+
+        // Assemblage des éléments du menu : titre + filtres disponibles
+        menu.getChildren().addAll(titreMenu, annee, secteur, niveauNAF, indicateur);
+        menu.setSpacing(10);
 
         // FOOTER
         HBox footer = new HBox();
@@ -79,20 +143,20 @@ public class Main extends Application {
         footer.setPadding(new Insets(12, 30, 12, 30));
         footer.setStyle("-fx-background-color: " + COLOR_FOOTER_BG + ";");
 
-        Label footerLabel = new Label("👥  Équipe : DUPOND · DUPOND · DUPOND · DUPOND · DUPOND");
+        Label footerLabel = new Label("Équipe : EL AOUDI · FONTANEZ · FUMERON–LECOMTE · KACHLER · MANGIN · PIERROT · SAHRAOUI DOUKKALI");
         footerLabel.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
         footerLabel.setTextFill(Color.web(COLOR_TEXT_DIM));
         footer.getChildren().add(footerLabel);
 
         // ASSEMBLAGE
         root.setTop(header);
-//        root.setLeft(// TODO);
+//        root.setLeft(// TODO ?);
 //        root.setCenter(// TODO);
         root.setRight(menu);
         root.setBottom(footer);
 
         Scene scene = new Scene(root, 900, 750);
-        stage.setTitle("Carte de France — Départements");
+        stage.setTitle("Projet Genie Logiciel");
         stage.setScene(scene);
         stage.show();
     }

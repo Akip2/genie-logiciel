@@ -64,7 +64,7 @@ public class Main extends Application {
         Label titreMenu = new Label("Menu de selection");
 
         ComboBox<String> comboAnnee = new ComboBox<>();
-        comboAnnee.getItems().addAll("2018", "2019", "2020", "2021", "2022");
+        comboAnnee.getItems().addAll("2020", "2021", "2023");
         comboAnnee.setPromptText("Choisir une année");
 
         ComboBox<String> comboSecteur = new ComboBox<>();

@@ -4,6 +4,7 @@ import com.example.testfx.data.DataRepository;
 import com.example.testfx.model.AccidentTravail;
 import org.apache.poi.EmptyFileException;
 import org.apache.poi.openxml4j.exceptions.NotOfficeXmlFileException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -20,14 +23,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * Permet de tester les méthodes de la classe DataRepository
  */
 public class TestDataRepository {
-    private final DataRepository dataRepository = new DataRepository();
-    private final DataRepository nonCharge = new DataRepository();
+    private DataRepository dataRepository;
+    private DataRepository nonCharge;
     private AccidentTravail a1;
     private AccidentTravail a2;
     private AccidentTravail a3;
 
     @BeforeEach
     public void init(){
+        dataRepository = new DataRepository();
+        nonCharge =  new DataRepository();
         try {
             // On peut utiliser cette méthode dans le before each car ses tests on été écrits et exécutés avant l'écriture de la méthode init
             dataRepository.chargerFichier("src/test/resources/2023.xlsx");
@@ -41,6 +46,15 @@ public class TestDataRepository {
         a1.setCodeNAF("0111Z");
         a2.setCodeNAF("0112Z");
         a3.setCodeNAF("0121Z");
+    }
+
+    @AfterEach
+    public void clean(){
+        dataRepository = null;
+        nonCharge = null;
+        a1 = null;
+        a2 = null;
+        a3 = null;
     }
 
     @Test
@@ -194,6 +208,26 @@ public class TestDataRepository {
     }
 
     @Test
+    public void test_getTout(){
+        // Initialisation
+        List<AccidentTravail> attendu = new ArrayList<>();
+        attendu.add(a1);
+        attendu.add(a2);
+        attendu.add(a3);
+
+        // Test
+        List<AccidentTravail> ok = dataRepository.getTout();
+        List<AccidentTravail> non_charge = nonCharge.getTout();
+
+        // Validations
+        assertEquals(attendu.get(0).getCodeNAF(), ok.get(0).getCodeNAF());
+        assertEquals(attendu.get(1).getCodeNAF(), ok.get(1).getCodeNAF());
+        assertEquals(attendu.get(2).getCodeNAF(), ok.get(2).getCodeNAF());
+
+        assertTrue(non_charge.isEmpty());
+    }
+
+    @Test
     public void test_parAnnee_OK(){
         try {
             dataRepository.chargerFichier("src/test/resources/2026.xlsx");
@@ -210,4 +244,104 @@ public class TestDataRepository {
         assertEquals(resultat.getLast().getCodeNAF(), a3.getCodeNAF());
 
     }
+
+    @Test
+    public void test_parAnnee_non_charge(){
+
+        // Test
+        List<AccidentTravail> resultat = nonCharge.parAnnee(2023);
+
+        // Validation
+        assertTrue(resultat.isEmpty());
+    }
+
+    @Test
+    public void test_parAnnee_annee_inexistante(){
+        // Test
+        List<AccidentTravail> resultat = dataRepository.parAnnee(3012);
+
+        // Validation
+        assertTrue(resultat.isEmpty());
+    }
+
+    @Test
+    public void test_parCTN(){
+        // Test
+        List<AccidentTravail> ok = dataRepository.parCTN("AA");
+        List<AccidentTravail> non_charge = nonCharge.parCTN("AA");
+        List<AccidentTravail> inexistant = dataRepository.parCTN("YEAH");
+
+        // Validations
+        assertEquals(2, ok.size());
+        assertTrue(non_charge.isEmpty());
+        assertTrue(inexistant.isEmpty());
+    }
+
+    @Test
+    public void test_parCTNetAnnee(){
+        throw new Error("TODO");
+    }
+
+    @Test
+    public void test_parCodeNAF(){
+        throw new Error("TODO");
+    }
+
+    @Test
+    public void test_parCodeNAF2(){
+        throw new Error("TODO");
+    }
+
+    @Test
+    public void test_rechercherActivite(){
+        throw new Error("TODO");
+    }
+
+    @Test
+    public void test_getListe_CTN(){
+        // Initialisation
+        List<String> attendus = new ArrayList<>();
+        attendus.add("AA");
+        attendus.add("AB");
+
+        // Test
+        List<String> ok = dataRepository.getListeCTN();
+        List<String> non_charge = nonCharge.getListeCTN();
+
+        // Validations
+        assertEquals(attendus, ok);
+        assertTrue(non_charge.isEmpty());
+    }
+
+    @Test
+    public void test_getReferentielsCTN(){
+        // Initialisation
+        Map<String, String> attendu = new TreeMap<>();
+        attendu.put("AA", "Métallurgie");
+        attendu.put("AB", "Métallurgie");
+
+        // Test
+        Map<String, String> ok = dataRepository.getReferentielCTN();
+        Map<String, String> non_charge = nonCharge.getReferentielCTN();
+
+        // Validations
+        assertEquals(attendu, ok);
+        assertTrue(non_charge.isEmpty());
+    }
+
+    @Test
+    public void test_getReferentielNAF2(){
+        // Initialisation
+        Map<String, String> attendu = new TreeMap<>();
+        attendu.put("01", "Culture et production animale, chasse et services annexes");
+
+        // Test
+        Map<String, String> ok = dataRepository.getReferentielNAF2();
+        Map<String, String> non_charge = nonCharge.getReferentielNAF2();
+
+        // Validations
+        assertEquals(attendu, ok);
+        assertTrue(non_charge.isEmpty());
+    }
+
 }

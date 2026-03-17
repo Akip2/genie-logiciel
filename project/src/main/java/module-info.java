@@ -8,6 +8,9 @@ module org.example.project {
     requires org.jfree.chart.fx;
 
     exports com.example.testfx;
-
-    opens com.example.testfx.chart to javafx.graphics;
+    exports com.example.testfx.chart;
+    exports com.example.testfx.dto;
+    exports com.example.testfx.model;
+    exports com.example.testfx.service;
+    exports com.example.testfx.data;
 }

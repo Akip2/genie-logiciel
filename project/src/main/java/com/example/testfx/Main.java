@@ -5,6 +5,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.effect.DropShadow;
@@ -19,9 +20,9 @@ import java.util.List;
 
 public class Main extends Application {
 
-    private static final String COLOR_PRIMARY   = "#2C3E50";
-    private static final String COLOR_ACCENT    = "#3498DB";
-    private static final String COLOR_FOOTER_BG = "#1A252F";
+    private static final String COLOR_PRIMARY    = "#2C3E50";
+    private static final String COLOR_ACCENT     = "#3498DB";
+    private static final String COLOR_FOOTER_BG  = "#1A252F";
     private static final String COLOR_TEXT_LIGHT = "#ECF0F1";
     private static final String COLOR_TEXT_DIM   = "#95A5A6";
 
@@ -38,7 +39,7 @@ public class Main extends Application {
         // HEADER
         HBox header = new HBox();
         header.setAlignment(Pos.CENTER);
-        header.setPadding(new Insets(18, 30, 18, 30));
+        header.setPadding(new Insets(10, 20, 10, 20));
         header.setStyle(
                 "-fx-background-color: linear-gradient(to right, " + COLOR_PRIMARY + ", " + COLOR_ACCENT + ");"
         );
@@ -58,7 +59,7 @@ public class Main extends Application {
         // TODO ?
 
         // CENTRE
-        // TODO
+        // TODO : grid (3 lignes / 2 colonnes) pour afficher les graphiques
 
 
         // DROITE
@@ -133,8 +134,18 @@ public class Main extends Application {
         indicateur.getChildren().addAll(indicateurLabel, spacerF4, comboIndicateur);
         indicateur.setAlignment(Pos.CENTER);
 
+        // séparateur
+        Region separatorBas = new Region();
+        VBox.setVgrow(separatorBas, Priority.ALWAYS);
+
+        // Bouton appliquer les filtres
+        Button btnAppliquerFiltres = new Button("Appliquer les filtres");
+
+        // Bouton réinitialiser les filtres
+         Button btnRinitialiserFiltres = new Button("Rinitialiser les filtres");
+
         // Assemblage des éléments du menu : titre + filtres disponibles
-        menu.getChildren().addAll(titreMenu, annee, secteur, niveauNAF, indicateur);
+        menu.getChildren().addAll(titreMenu, annee, secteur, niveauNAF, indicateur, separatorBas, btnAppliquerFiltres, btnRinitialiserFiltres);
         menu.setSpacing(10);
 
         // FOOTER

@@ -2,29 +2,17 @@ package com.example.testfx;
 
 import com.example.testfx.data.DataRepository;
 import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class Main extends Application {
-
-    private static final String COLOR_PRIMARY    = "#2C3E50";
-    private static final String COLOR_ACCENT     = "#3498DB";
-    private static final String COLOR_FOOTER_BG  = "#1A252F";
-    private static final String COLOR_TEXT_LIGHT = "#ECF0F1";
-    private static final String COLOR_TEXT_DIM   = "#95A5A6";
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -34,28 +22,15 @@ public class Main extends Application {
         dataRepository.chargerDossier("data");
 
         BorderPane root = new BorderPane();
-        root.setStyle("-fx-background-color: #F0F4F8;");
+        root.getStyleClass().add("root");
 
         // HEADER
         HBox header = new HBox();
-        header.setAlignment(Pos.CENTER);
-        header.setPadding(new Insets(10, 20, 10, 20));
-        header.setStyle(
-                "-fx-background-color: linear-gradient(to right, " + COLOR_PRIMARY + ", " + COLOR_ACCENT + ");"
-        );
-
-        DropShadow headerShadow = new DropShadow();
-        headerShadow.setColor(Color.rgb(0, 0, 0, 0.25));
-        headerShadow.setOffsetY(3);
-        headerShadow.setRadius(8);
-        header.setEffect(headerShadow);
+        header.getStyleClass().add("header");
 
         Label titre = new Label("Projet Genie Logiciel");
-        titre.setFont(Font.font("Segoe UI", FontWeight.BOLD, 22));
-        titre.setTextFill(Color.web(COLOR_TEXT_LIGHT));
+        titre.getStyleClass().add("header-title");
         header.getChildren().add(titre);
-
-        // GAUCHE
         // TODO ?
 
         // CENTRE
@@ -64,75 +39,83 @@ public class Main extends Application {
 
         // DROITE
         VBox menu = new VBox();
-        menu.setPadding(new Insets(10, 20, 10, 20));
+        menu.getStyleClass().add("menu");
 
         // titre du menu
         Label titreMenu = new Label("Filtres disponibles");
-        titreMenu.setStyle("-fx-font-size: 24px;");
+        titreMenu.getStyleClass().add("menu-title");
 
         // F1 : liste de choix de l'année
         HBox annee = new HBox();
+        annee.getStyleClass().add("filter-row");
         Label anneeLabel = new Label("Année : ");
+        anneeLabel.getStyleClass().add("filter-label");
 
         Region spacerF1 = new Region();
         HBox.setHgrow(spacerF1, Priority.ALWAYS);
 
         ComboBox<Integer> comboAnnee = new ComboBox<>();
+        comboAnnee.getStyleClass().add("filter-combo");
         List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
         comboAnnee.getItems().addAll(anneesDispo);
         comboAnnee.setValue(anneesDispo.getLast());
         comboAnnee.setPromptText("Choisir une année");
 
         annee.getChildren().addAll(anneeLabel, spacerF1, comboAnnee);
-        annee.setAlignment(Pos.CENTER);
 
         // F2 : liste de choix du secteur
         HBox secteur = new HBox();
+        secteur.getStyleClass().add("filter-row");
         Label secteurLabel = new Label("Secteur : ");
+        secteurLabel.getStyleClass().add("filter-label");
 
         Region spacerF2 = new Region();
         HBox.setHgrow(spacerF2, Priority.ALWAYS);
 
         ComboBox<String> comboSecteur = new ComboBox<>();
+        comboSecteur.getStyleClass().add("filter-combo");
         List<String> CTNDispo = dataRepository.getListeCTN();
         comboSecteur.getItems().addAll(CTNDispo);
         comboSecteur.setValue(comboSecteur.getItems().getFirst());
         comboSecteur.setPromptText("Choisir un secteur");
 
         secteur.getChildren().addAll(secteurLabel, spacerF2, comboSecteur);
-        secteur.setAlignment(Pos.CENTER);
 
         // F3 : liste de choix du niveau NAF
         HBox niveauNAF = new HBox();
+        niveauNAF.getStyleClass().add("filter-row");
         Label niveauNAFLabel = new Label("Niveau NAF : ");
+        niveauNAFLabel.getStyleClass().add("filter-label");
 
         Region spacerF3 = new Region();
         HBox.setHgrow(spacerF3, Priority.ALWAYS);
 
         ComboBox<String> comboNAF = new ComboBox<>();
+        comboNAF.getStyleClass().add("filter-combo");
         List<String> NAFDispo = Arrays.asList("CTN", "NAF38", "NAF2");
         comboNAF.getItems().addAll(NAFDispo);
         comboNAF.setValue(comboNAF.getItems().getFirst());
         comboNAF.setPromptText("Choisir un niveau NAF");
 
         niveauNAF.getChildren().addAll(niveauNAFLabel, spacerF3, comboNAF);
-        niveauNAF.setAlignment(Pos.CENTER);
 
         // F4 : liste de choix de l'indicateur
         HBox indicateur = new HBox();
+        indicateur.getStyleClass().add("filter-row");
         Label indicateurLabel = new Label("Indicateur : ");
+        indicateurLabel.getStyleClass().add("filter-label");
 
         Region spacerF4 = new Region();
         HBox.setHgrow(spacerF4, Priority.ALWAYS);
 
         ComboBox<String> comboIndicateur = new ComboBox<>();
+        comboIndicateur.getStyleClass().add("filter-combo");
         List<String> indicateurs = Arrays.asList("atPremierReglement", "nombreSalaries", "heuresTravaillees", "journeesIT", "deces", "nouvellesIP", "indiceFrequence", "tauxGravite");
         comboIndicateur.getItems().addAll(indicateurs);
         comboIndicateur.setValue(comboIndicateur.getItems().getFirst());
         comboIndicateur.setPromptText("Choisir un indicateur");
 
         indicateur.getChildren().addAll(indicateurLabel, spacerF4, comboIndicateur);
-        indicateur.setAlignment(Pos.CENTER);
 
         // séparateur
         Region separatorBas = new Region();
@@ -140,23 +123,21 @@ public class Main extends Application {
 
         // Bouton appliquer les filtres
         Button btnAppliquerFiltres = new Button("Appliquer les filtres");
+        btnAppliquerFiltres.getStyleClass().add("button-filter");
 
         // Bouton réinitialiser les filtres
-         Button btnRinitialiserFiltres = new Button("Rinitialiser les filtres");
+        Button btnRinitialiserFiltres = new Button("Rinitialiser les filtres");
+        btnRinitialiserFiltres.getStyleClass().add("button-filter");
 
         // Assemblage des éléments du menu : titre + filtres disponibles
         menu.getChildren().addAll(titreMenu, annee, secteur, niveauNAF, indicateur, separatorBas, btnAppliquerFiltres, btnRinitialiserFiltres);
-        menu.setSpacing(10);
 
         // FOOTER
         HBox footer = new HBox();
-        footer.setAlignment(Pos.CENTER);
-        footer.setPadding(new Insets(12, 30, 12, 30));
-        footer.setStyle("-fx-background-color: " + COLOR_FOOTER_BG + ";");
+        footer.getStyleClass().add("footer");
 
         Label footerLabel = new Label("Équipe : EL AOUDI · FONTANEZ · FUMERON–LECOMTE · KACHLER · MANGIN · PIERROT · SAHRAOUI DOUKKALI");
-        footerLabel.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 12));
-        footerLabel.setTextFill(Color.web(COLOR_TEXT_DIM));
+        footerLabel.getStyleClass().add("footer-label");
         footer.getChildren().add(footerLabel);
 
         // ASSEMBLAGE
@@ -167,6 +148,7 @@ public class Main extends Application {
         root.setBottom(footer);
 
         Scene scene = new Scene(root, 900, 750);
+        scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
         stage.setTitle("Projet Genie Logiciel");
         stage.setScene(scene);
         stage.show();

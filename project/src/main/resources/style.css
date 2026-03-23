@@ -40,28 +40,57 @@
    ======================================== */
 
 .menu {
-    -fx-padding: 10 20 10 20;
-    -fx-spacing: 10;
+    -fx-padding: 12 15 12 15;
+    -fx-spacing: 0;
+    -fx-background-color: #FFFFFF;
 }
 
 .menu-title {
-    -fx-font-size: 24;
+    -fx-font-size: 14;
     -fx-font-weight: bold;
+    -fx-text-fill: #2C3E50;
+    -fx-padding: 0 0 4 0;
+}
+
+.menu-subtitle {
+    -fx-font-size: 10;
+    -fx-text-fill: #95A5A6;
+    -fx-padding: 0 0 10 0;
+    -fx-wrap-text: true;
+}
+
+.filter-section-title {
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-text-fill: #7F8C8D;
+    -fx-padding: 8 0 5 0;
 }
 
 .filter-row {
-    -fx-alignment: center;
-    -fx-spacing: 10;
+    -fx-alignment: center_left;
+    -fx-spacing: 6;
+    -fx-padding: 3 0 3 0;
 }
 
 .filter-label {
-    -fx-font-size: 12;
+    -fx-font-size: 11;
     -fx-font-weight: normal;
+    -fx-text-fill: #2C3E50;
 }
 
 .filter-combo {
-    -fx-font-size: 12;
-    -fx-min-width: 150;
+    -fx-font-size: 11;
+    -fx-min-width: 140;
+    -fx-padding: 4 8 4 8;
+    -fx-background-color: #ECF0F1;
+    -fx-border-color: #BDC3C7;
+    -fx-border-radius: 2;
+}
+
+.filter-checkbox {
+    -fx-font-size: 11;
+    -fx-text-fill: #2C3E50;
+    -fx-padding: 2 0 2 0;
 }
 
 /* ========================================
@@ -73,6 +102,7 @@
     -fx-font-size: 12;
     -fx-font-weight: normal;
     -fx-cursor: hand;
+    -fx-border-radius: 3;
 }
 
 .button-filter:hover {
@@ -81,6 +111,46 @@
 
 .button-filter:pressed {
     -fx-opacity: 0.8;
+}
+
+.button-apply {
+    -fx-padding: 10 20 10 20;
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+    -fx-background-color: #3498DB;
+    -fx-text-fill: #FFFFFF;
+    -fx-cursor: hand;
+    -fx-border-radius: 3;
+    -fx-min-width: 100%;
+    -fx-padding: 8;
+}
+
+.button-apply:hover {
+    -fx-background-color: #2980B9;
+}
+
+.button-apply:pressed {
+    -fx-background-color: #1F618D;
+}
+
+.button-reset {
+    -fx-padding: 8 20 8 20;
+    -fx-font-size: 11;
+    -fx-background-color: #ECF0F1;
+    -fx-text-fill: #2C3E50;
+    -fx-cursor: hand;
+    -fx-border-color: #BDC3C7;
+    -fx-border-radius: 3;
+    -fx-min-width: 100%;
+    -fx-padding: 8;
+}
+
+.button-reset:hover {
+    -fx-background-color: #D5DBDB;
+}
+
+.button-reset:pressed {
+    -fx-background-color: #BDC3C7;
 }
 
 /* ========================================

@@ -1,11 +1,11 @@
 package com.example.testfx;
 
 import com.example.testfx.data.DataRepository;
+import com.example.testfx.onglets.*;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
@@ -14,45 +14,102 @@ import java.util.List;
 
 public class Main extends Application {
 
+    private DataRepository dataRepository;
+    private List<Onglet> onglets;
+    private Onglet ongletActuel;
+    private BorderPane root;
+    private VBox contentContainer;
+
     @Override
     public void start(Stage stage) throws Exception {
-
-        // chargement des données
-        DataRepository dataRepository = new DataRepository();
+        // Chargement des données
+        dataRepository = new DataRepository();
         dataRepository.chargerDossier("data");
 
-        BorderPane root = new BorderPane();
+        // Initialisation des onglets
+        onglets = Arrays.asList(
+                new OngletAnalyse(),
+                new OngletDonnees(),
+                new OngletRapports()
+        );
+        ongletActuel = onglets.get(0);
+
+        // Construction de l'interface
+        root = new BorderPane();
         root.getStyleClass().add("root");
 
-        // HEADER
+        root.setTop(construireHeader());
+        root.setLeft(construireMenu());
+        root.setCenter(construireContenu());
+        root.setBottom(construireFooter());
+
+        Scene scene = new Scene(root, 1200, 750);
+        scene.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
+        stage.setTitle("Projet Genie Logiciel");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    /**
+     * Construit le header avec les boutons d'onglets
+     */
+    private HBox construireHeader() {
         HBox header = new HBox();
         header.getStyleClass().add("header");
+        header.setSpacing(15);
+        header.setPadding(new Insets(10, 20, 10, 20));
+        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         Label titre = new Label("Projet Genie Logiciel");
         titre.getStyleClass().add("header-title");
-        header.getChildren().add(titre);
-        // TODO ?
+        HBox.setHgrow(titre, Priority.ALWAYS);
 
-        // CENTRE
-        // TODO : grid (3 lignes / 2 colonnes) pour afficher les graphiques
+        // Boutons d'onglets
+        HBox navigationBox = new HBox();
+        navigationBox.setSpacing(10);
 
+        for (Onglet onglet : onglets) {
+            Button btn = new Button(onglet.getNom());
+            btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand;");
+            
+            if (onglet == ongletActuel) {
+                btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand; -fx-background-color: #FFFFFF; -fx-text-fill: #3498DB; -fx-font-weight: bold;");
+            }
 
-        // DROITE
+            btn.setOnAction(e -> changerOnglet(onglet));
+            navigationBox.getChildren().add(btn);
+        }
+
+        header.getChildren().addAll(titre, navigationBox);
+        return header;
+    }
+
+    /**
+     * Construit le menu de filtres à gauche
+     */
+    private VBox construireMenu() {
         VBox menu = new VBox();
         menu.getStyleClass().add("menu");
+        menu.setSpacing(0);
+        menu.setPrefWidth(250);
 
-        // titre du menu
-        Label titreMenu = new Label("Filtres disponibles");
+        // Titre du menu
+        Label titreMenu = new Label("Paramètres d'analyse");
         titreMenu.getStyleClass().add("menu-title");
 
-        // F1 : liste de choix de l'année
+        // Description
+        Label descriptionMenu = new Label("Ajustez les critères pour explorer les données selon vos besoins");
+        descriptionMenu.getStyleClass().add("menu-subtitle");
+
+        // Séparateur
+        Separator sep1 = new Separator();
+
+        // ANNÉE DE RÉFÉRENCE
+        Label anneeSection = new Label("ANNÉE DE RÉFÉRENCE");
+        anneeSection.getStyleClass().add("filter-section-title");
+
         HBox annee = new HBox();
         annee.getStyleClass().add("filter-row");
-        Label anneeLabel = new Label("Année : ");
-        anneeLabel.getStyleClass().add("filter-label");
-
-        Region spacerF1 = new Region();
-        HBox.setHgrow(spacerF1, Priority.ALWAYS);
 
         ComboBox<Integer> comboAnnee = new ComboBox<>();
         comboAnnee.getStyleClass().add("filter-combo");
@@ -61,34 +118,41 @@ public class Main extends Application {
         comboAnnee.setValue(anneesDispo.getLast());
         comboAnnee.setPromptText("Choisir une année");
 
-        annee.getChildren().addAll(anneeLabel, spacerF1, comboAnnee);
+        annee.getChildren().add(comboAnnee);
 
-        // F2 : liste de choix du secteur
-        HBox secteur = new HBox();
-        secteur.getStyleClass().add("filter-row");
-        Label secteurLabel = new Label("Secteur : ");
-        secteurLabel.getStyleClass().add("filter-label");
+        // SECTEUR CTN
+        Label secteurSection = new Label("SECTEUR CTN");
+        secteurSection.getStyleClass().add("filter-section-title");
 
-        Region spacerF2 = new Region();
-        HBox.setHgrow(spacerF2, Priority.ALWAYS);
+        VBox secteurCheckboxes = new VBox();
+        secteurCheckboxes.setSpacing(2);
+        secteurCheckboxes.setPadding(new Insets(0, 0, 5, 0));
 
-        ComboBox<String> comboSecteur = new ComboBox<>();
-        comboSecteur.getStyleClass().add("filter-combo");
         List<String> CTNDispo = dataRepository.getListeCTN();
-        comboSecteur.getItems().addAll(CTNDispo);
-        comboSecteur.setValue(comboSecteur.getItems().getFirst());
-        comboSecteur.setPromptText("Choisir un secteur");
+        int countSelected = 0;
+        for (String ctn : CTNDispo) {
+            CheckBox checkBox = new CheckBox(ctn);
+            checkBox.getStyleClass().add("filter-checkbox");
+            if (ctn.equals("AA - Métallurgie") || ctn.equals("EE - Chimie, caoutchouc, plasturgies") || ctn.equals("GG - Commerces non alimentaires")) {
+                checkBox.setSelected(true);
+                countSelected++;
+            }
+            secteurCheckboxes.getChildren().add(checkBox);
+        }
 
-        secteur.getChildren().addAll(secteurLabel, spacerF2, comboSecteur);
+        Label secteurCount = new Label(countSelected + " sélec.");
+        secteurCount.setStyle("-fx-font-size: 10; -fx-text-fill: #3498DB; -fx-padding: 0 0 3 0;");
 
-        // F3 : liste de choix du niveau NAF
+        VBox secteurContainer = new VBox();
+        secteurContainer.setSpacing(2);
+        secteurContainer.getChildren().addAll(secteurCount, secteurCheckboxes);
+
+        // NIVEAU DE GRANULARITÉ
+        Label niveauSection = new Label("NIVEAU DE GRANULARITÉ");
+        niveauSection.getStyleClass().add("filter-section-title");
+
         HBox niveauNAF = new HBox();
         niveauNAF.getStyleClass().add("filter-row");
-        Label niveauNAFLabel = new Label("Niveau NAF : ");
-        niveauNAFLabel.getStyleClass().add("filter-label");
-
-        Region spacerF3 = new Region();
-        HBox.setHgrow(spacerF3, Priority.ALWAYS);
 
         ComboBox<String> comboNAF = new ComboBox<>();
         comboNAF.getStyleClass().add("filter-combo");
@@ -97,16 +161,14 @@ public class Main extends Application {
         comboNAF.setValue(comboNAF.getItems().getFirst());
         comboNAF.setPromptText("Choisir un niveau NAF");
 
-        niveauNAF.getChildren().addAll(niveauNAFLabel, spacerF3, comboNAF);
+        niveauNAF.getChildren().add(comboNAF);
 
-        // F4 : liste de choix de l'indicateur
+        // INDICATEUR MESURÉ
+        Label indicateurSection = new Label("INDICATEUR MESURÉ");
+        indicateurSection.getStyleClass().add("filter-section-title");
+
         HBox indicateur = new HBox();
         indicateur.getStyleClass().add("filter-row");
-        Label indicateurLabel = new Label("Indicateur : ");
-        indicateurLabel.getStyleClass().add("filter-label");
-
-        Region spacerF4 = new Region();
-        HBox.setHgrow(spacerF4, Priority.ALWAYS);
 
         ComboBox<String> comboIndicateur = new ComboBox<>();
         comboIndicateur.getStyleClass().add("filter-combo");
@@ -115,24 +177,90 @@ public class Main extends Application {
         comboIndicateur.setValue(comboIndicateur.getItems().getFirst());
         comboIndicateur.setPromptText("Choisir un indicateur");
 
-        indicateur.getChildren().addAll(indicateurLabel, spacerF4, comboIndicateur);
+        indicateur.getChildren().add(comboIndicateur);
 
-        // séparateur
+        // Séparateur
         Region separatorBas = new Region();
         VBox.setVgrow(separatorBas, Priority.ALWAYS);
 
-        // Bouton appliquer les filtres
-        Button btnAppliquerFiltres = new Button("Appliquer les filtres");
-        btnAppliquerFiltres.getStyleClass().add("button-filter");
+        // Boutons
+        Button btnAppliquerFiltres = new Button("Mettre à jour l'analyse");
+        btnAppliquerFiltres.getStyleClass().add("button-apply");
 
-        // Bouton réinitialiser les filtres
-        Button btnRinitialiserFiltres = new Button("Rinitialiser les filtres");
-        btnRinitialiserFiltres.getStyleClass().add("button-filter");
+        Button btnRinitialiserFiltres = new Button("Réinitialiser");
+        btnRinitialiserFiltres.getStyleClass().add("button-reset");
 
-        // Assemblage des éléments du menu : titre + filtres disponibles
-        menu.getChildren().addAll(titreMenu, annee, secteur, niveauNAF, indicateur, separatorBas, btnAppliquerFiltres, btnRinitialiserFiltres);
+        // Assemblage du menu
+        menu.getChildren().addAll(
+                titreMenu,
+                descriptionMenu,
+                sep1,
+                anneeSection,
+                annee,
+                secteurSection,
+                secteurContainer,
+                niveauSection,
+                niveauNAF,
+                indicateurSection,
+                indicateur,
+                separatorBas,
+                btnAppliquerFiltres,
+                btnRinitialiserFiltres
+        );
 
-        // FOOTER
+        return menu;
+    }
+
+    /**
+     * Construit le contenu central (adaptable selon l'onglet)
+     */
+    private Pane construireContenu() {
+        contentContainer = new VBox();
+        contentContainer.setStyle("-fx-background-color: #F0F4F8;");
+        mettreAJourContenu();
+        return contentContainer;
+    }
+
+    /**
+     * Met à jour le contenu central selon l'onglet actuel
+     */
+    private void mettreAJourContenu() {
+        contentContainer.getChildren().clear();
+        contentContainer.getChildren().add(ongletActuel.getContenu());
+    }
+
+    /**
+     * Change l'onglet actuel et met à jour l'affichage
+     */
+    private void changerOnglet(Onglet onglet) {
+        ongletActuel = onglet;
+        mettreAJourContenu();
+        mettreAJourHeaderButtons();
+    }
+
+    /**
+     * Met à jour le style des boutons d'onglets
+     */
+    private void mettreAJourHeaderButtons() {
+        // Récupérer le HBox de navigation du header
+        HBox header = (HBox) root.getTop();
+        HBox navigationBox = (HBox) header.getChildren().get(1);
+        
+        // Réinitialiser tous les boutons
+        for (int i = 0; i < navigationBox.getChildren().size(); i++) {
+            Button btn = (Button) navigationBox.getChildren().get(i);
+            if (onglets.get(i) == ongletActuel) {
+                btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand; -fx-background-color: #FFFFFF; -fx-text-fill: #3498DB; -fx-font-weight: bold;");
+            } else {
+                btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand;");
+            }
+        }
+    }
+
+    /**
+     * Construit le footer
+     */
+    private HBox construireFooter() {
         HBox footer = new HBox();
         footer.getStyleClass().add("footer");
 
@@ -140,18 +268,7 @@ public class Main extends Application {
         footerLabel.getStyleClass().add("footer-label");
         footer.getChildren().add(footerLabel);
 
-        // ASSEMBLAGE
-        root.setTop(header);
-//        root.setLeft(// TODO ?);
-//        root.setCenter(// TODO);
-        root.setRight(menu);
-        root.setBottom(footer);
-
-        Scene scene = new Scene(root, 900, 750);
-        scene.getStylesheets().add(getClass().getResource("/styles/style.css").toExternalForm());
-        stage.setTitle("Projet Genie Logiciel");
-        stage.setScene(scene);
-        stage.show();
+        return footer;
     }
 
     public static void main(String[] args) {

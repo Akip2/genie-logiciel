@@ -24,8 +24,6 @@ import java.util.Map;
  * G2 — Grouped bar chart : comparaison par secteur sur 2020 / 2021 / 2023.
  * Une couleur par année, les secteurs côte à côte.
  * Affiche une ligne horizontale représentant la moyenne.
- *
- * Nathan : appeler update() avec les CTN cochés et l'indicateur.
  */
 public class BarChartEvolution {
 

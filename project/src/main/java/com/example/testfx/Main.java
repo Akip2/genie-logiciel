@@ -1,6 +1,9 @@
 package com.example.testfx;
 
+import com.example.testfx.chart.BarChartSecteur;
+import com.example.testfx.chart.ChartManager;
 import com.example.testfx.data.DataRepository;
+import com.example.testfx.dto.FilterRequest;
 import com.example.testfx.onglets.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -11,14 +14,22 @@ import javafx.stage.Stage;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main extends Application {
 
     private DataRepository dataRepository;
+    private ChartManager chartManager;
     private List<Onglet> onglets;
     private Onglet ongletActuel;
     private BorderPane root;
     private VBox contentContainer;
+    
+    // Contrôles de filtre
+    private ComboBox<Integer> comboAnnee;
+    private VBox secteurCheckboxes;
+    private ComboBox<String> comboNAF;
+    private ComboBox<String> comboIndicateur;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -26,13 +37,26 @@ public class Main extends Application {
         dataRepository = new DataRepository();
         dataRepository.chargerDossier("data");
 
+        chartManager = new ChartManager(dataRepository);
+
         // Initialisation des onglets
         onglets = Arrays.asList(
-                new OngletAnalyse(),
+                new OngletAnalyse(chartManager),
                 new OngletDonnees(),
                 new OngletRapports()
         );
-        ongletActuel = onglets.get(0);
+        ongletActuel = onglets.getFirst();
+
+        // Initialiser les graphiques avec les filtres par défaut
+        List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
+        int anneeParDefaut = anneesDispo.getLast();
+        FilterRequest requestParDefaut = new FilterRequest.Builder()
+                .year(anneeParDefaut)
+                .selectedCTNs(Arrays.asList("AA - Métallurgie", "EE - Chimie, caoutchouc, plasturgies", "GG - Commerces non alimentaires"))
+                .nafLevel("CTN")
+                .indicator("atPremierReglement")
+                .build();
+        chartManager.updateAll(requestParDefaut);
 
         // Construction de l'interface
         root = new BorderPane();
@@ -111,7 +135,7 @@ public class Main extends Application {
         HBox annee = new HBox();
         annee.getStyleClass().add("filter-row");
 
-        ComboBox<Integer> comboAnnee = new ComboBox<>();
+        comboAnnee = new ComboBox<>();
         comboAnnee.getStyleClass().add("filter-combo");
         List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
         comboAnnee.getItems().addAll(anneesDispo);
@@ -124,28 +148,23 @@ public class Main extends Application {
         Label secteurSection = new Label("SECTEUR CTN");
         secteurSection.getStyleClass().add("filter-section-title");
 
-        VBox secteurCheckboxes = new VBox();
+        secteurCheckboxes = new VBox();
         secteurCheckboxes.setSpacing(2);
         secteurCheckboxes.setPadding(new Insets(0, 0, 5, 0));
 
         List<String> CTNDispo = dataRepository.getListeCTN();
-        int countSelected = 0;
         for (String ctn : CTNDispo) {
             CheckBox checkBox = new CheckBox(ctn);
             checkBox.getStyleClass().add("filter-checkbox");
             if (ctn.equals("AA - Métallurgie") || ctn.equals("EE - Chimie, caoutchouc, plasturgies") || ctn.equals("GG - Commerces non alimentaires")) {
                 checkBox.setSelected(true);
-                countSelected++;
             }
             secteurCheckboxes.getChildren().add(checkBox);
         }
 
-        Label secteurCount = new Label(countSelected + " sélec.");
-        secteurCount.setStyle("-fx-font-size: 10; -fx-text-fill: #3498DB; -fx-padding: 0 0 3 0;");
-
         VBox secteurContainer = new VBox();
         secteurContainer.setSpacing(2);
-        secteurContainer.getChildren().addAll(secteurCount, secteurCheckboxes);
+        secteurContainer.getChildren().addAll(secteurCheckboxes);
 
         // NIVEAU DE GRANULARITÉ
         Label niveauSection = new Label("NIVEAU DE GRANULARITÉ");
@@ -154,7 +173,7 @@ public class Main extends Application {
         HBox niveauNAF = new HBox();
         niveauNAF.getStyleClass().add("filter-row");
 
-        ComboBox<String> comboNAF = new ComboBox<>();
+        comboNAF = new ComboBox<>();
         comboNAF.getStyleClass().add("filter-combo");
         List<String> NAFDispo = Arrays.asList("CTN", "NAF38", "NAF2");
         comboNAF.getItems().addAll(NAFDispo);
@@ -170,7 +189,7 @@ public class Main extends Application {
         HBox indicateur = new HBox();
         indicateur.getStyleClass().add("filter-row");
 
-        ComboBox<String> comboIndicateur = new ComboBox<>();
+        comboIndicateur = new ComboBox<>();
         comboIndicateur.getStyleClass().add("filter-combo");
         List<String> indicateurs = Arrays.asList("atPremierReglement", "nombreSalaries", "heuresTravaillees", "journeesIT", "deces", "nouvellesIP", "indiceFrequence", "tauxGravite");
         comboIndicateur.getItems().addAll(indicateurs);
@@ -186,9 +205,11 @@ public class Main extends Application {
         // Boutons
         Button btnAppliquerFiltres = new Button("Mettre à jour l'analyse");
         btnAppliquerFiltres.getStyleClass().add("button-apply");
+        btnAppliquerFiltres.setOnAction(e -> appliquerFiltres());
 
         Button btnRinitialiserFiltres = new Button("Réinitialiser");
         btnRinitialiserFiltres.getStyleClass().add("button-reset");
+        btnRinitialiserFiltres.setOnAction(e -> reinitialiserFiltres());
 
         // Assemblage du menu
         menu.getChildren().addAll(
@@ -269,6 +290,70 @@ public class Main extends Application {
         footer.getChildren().add(footerLabel);
 
         return footer;
+    }
+
+    /**
+     * Applique les filtres et met à jour les graphiques
+     */
+    private void appliquerFiltres() {
+        // Récupérer l'année sélectionnée
+        Integer anneeSelectionnee = comboAnnee.getValue();
+        
+        // Récupérer les CTN sélectionnées
+        List<String> ctnSelectionnees = secteurCheckboxes.getChildren().stream()
+                .filter(node -> node instanceof CheckBox)
+                .map(node -> (CheckBox) node)
+                .filter(CheckBox::isSelected)
+                .map(CheckBox::getText)
+                .collect(Collectors.toList());
+        
+        // Récupérer le niveau NAF
+        String nafLevel = comboNAF.getValue();
+        
+        // Récupérer l'indicateur
+        String indicator = comboIndicateur.getValue();
+        
+        // Créer la requête de filtre
+        FilterRequest request = new FilterRequest.Builder()
+                .year(anneeSelectionnee)
+                .selectedCTNs(ctnSelectionnees)
+                .nafLevel(nafLevel)
+                .indicator(indicator)
+                .build();
+        
+        // Mettre à jour tous les graphiques
+        chartManager.updateAll(request);
+    }
+
+    /**
+     * Réinitialise les filtres à leurs valeurs par défaut
+     */
+    private void reinitialiserFiltres() {
+        // Réinitialiser l'année à la dernière année disponible
+        List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
+        comboAnnee.setValue(anneesDispo.getLast());
+        
+        // Réinitialiser les secteurs : sélectionner uniquement les 3 par défaut
+        secteurCheckboxes.getChildren().stream()
+                .filter(node -> node instanceof CheckBox)
+                .map(node -> (CheckBox) node)
+                .forEach(checkBox -> {
+                    String text = checkBox.getText();
+                    checkBox.setSelected(
+                            text.equals("AA - Métallurgie") || 
+                            text.equals("EE - Chimie, caoutchouc, plasturgies") || 
+                            text.equals("GG - Commerces non alimentaires")
+                    );
+                });
+        
+        // Réinitialiser le niveau NAF à "CTN"
+        comboNAF.setValue("CTN");
+        
+        // Réinitialiser l'indicateur au premier de la liste
+        comboIndicateur.setValue(comboIndicateur.getItems().getFirst());
+        
+        // Appliquer les filtres
+        appliquerFiltres();
     }
 
     public static void main(String[] args) {

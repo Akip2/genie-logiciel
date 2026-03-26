@@ -16,6 +16,8 @@ public class ChartManager {
     private final StackedBarChartCauses stackedBarChartCauses;
     private final BarChartTopNaf barChartTopNaf;
     private final ScatterChartRisque scatterChartRisque;
+    private final BarChartComparaison barChartComparaison;
+    private final BarChartTopCauses barChartTopCauses;
 
     private final IStatisticsService statsService;
     private final DataFilterService filterService;
@@ -29,13 +31,15 @@ public class ChartManager {
         this.statsService = new StatisticsServiceImpl(repository);
         this.filterService = new DataFilterService(repository);
 
-        // MSD - 16/03 - init des 6 graphiques
+        // init des 8 graphiques
         this.barChartSecteur = new BarChartSecteur(statsService, filterService);
         this.BarChartEvolution = new BarChartEvolution(statsService);
         this.pieChartRepartition = new PieChartRepartition(statsService);
         this.stackedBarChartCauses = new StackedBarChartCauses(statsService);
         this.barChartTopNaf = new BarChartTopNaf(statsService);
         this.scatterChartRisque = new ScatterChartRisque(statsService);
+        this.barChartComparaison = new BarChartComparaison(statsService, filterService);
+        this.barChartTopCauses = new BarChartTopCauses(statsService);
     }
 
     /**
@@ -51,6 +55,8 @@ public class ChartManager {
         pieChartRepartition.update(request.getYear());
         stackedBarChartCauses.update(request.getYear(), ctnsEffectifs);
         scatterChartRisque.update(request.getYear());
+        barChartComparaison.update(request.getYear(), ctnsEffectifs);
+        barChartTopCauses.update(request.getYear(), ctnsEffectifs);
 
         // top NAF : on prend le premier CTN selectionne
         if (!ctnsEffectifs.isEmpty()) {
@@ -71,4 +77,6 @@ public class ChartManager {
     public StackedBarChartCauses getStackedBarChartCauses() { return stackedBarChartCauses; }
     public BarChartTopNaf getBarChartTopNaf() { return barChartTopNaf; }
     public ScatterChartRisque getScatterChartRisque() { return scatterChartRisque; }
+    public BarChartComparaison getBarChartComparaison() { return barChartComparaison; }
+    public BarChartTopCauses getBarChartTopCauses() { return barChartTopCauses; }
 }

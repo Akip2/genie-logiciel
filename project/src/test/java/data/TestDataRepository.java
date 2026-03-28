@@ -277,24 +277,57 @@ public class TestDataRepository {
         assertTrue(inexistant.isEmpty());
     }
 
-    @Test
+    @Test    // Test fait par Rim
     public void test_parCTNetAnnee(){
-        throw new Error("TODO");
+        // Test
+        List<AccidentTravail> ok = dataRepository.parCTNetAnnee("AA", 2023);
+        List<AccidentTravail> non_charge = nonCharge.parCTNetAnnee("AA", 2023);
+        List<AccidentTravail> inexistant = dataRepository.parCTNetAnnee("YEAH", 2023);
+
+        // Validations
+        assertEquals(2, ok.size());
+        assertTrue(non_charge.isEmpty());
+        assertTrue(inexistant.isEmpty());
     }
 
-    @Test
+    @Test   // Test fait par Rim
     public void test_parCodeNAF(){
-        throw new Error("TODO");
+        // Test
+        List<AccidentTravail> ok = dataRepository.parCodeNAF("0111Z");
+        List<AccidentTravail> non_charge = nonCharge.parCodeNAF("0111Z");
+        List<AccidentTravail> inexistant = dataRepository.parCodeNAF("9999X");
+
+        // Validations
+        assertEquals(1, ok.size());
+        assertEquals("0111Z", ok.getFirst().getCodeNAF());
+        assertTrue(non_charge.isEmpty());
+        assertTrue(inexistant.isEmpty());
     }
 
-    @Test
+    @Test  // Test fait par Rim
     public void test_parCodeNAF2(){
-        throw new Error("TODO");
+        // Test
+        List<AccidentTravail> ok = dataRepository.parCodeNAF2("01");
+        List<AccidentTravail> non_charge = nonCharge.parCodeNAF2("01");
+        List<AccidentTravail> inexistant = dataRepository.parCodeNAF2("99");
+
+        // Validations
+        assertEquals(3, ok.size());
+        assertTrue(non_charge.isEmpty());
+        assertTrue(inexistant.isEmpty());
     }
 
-    @Test
+    @Test // Test fait par Rim
     public void test_rechercherActivite(){
-        throw new Error("TODO");
+        // Test
+        List<AccidentTravail> ok = dataRepository.rechercherActivite("Culture");
+        List<AccidentTravail> non_charge = nonCharge.rechercherActivite("Culture");
+        List<AccidentTravail> inexistant = dataRepository.rechercherActivite("YEAH");
+
+        // Validations
+        assertEquals(3, ok.size());
+        assertTrue(non_charge.isEmpty());
+        assertTrue(inexistant.isEmpty());
     }
 
     @Test

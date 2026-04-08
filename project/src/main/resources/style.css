@@ -1,0 +1,325 @@
+/* ========================================
+   COULEURS PRINCIPALES
+   #1A2332 - Header / footer (bleu très foncé)
+   #2563EB - Accent bleu (bouton actif, apply)
+   #F8FAFC - Fond général
+   #FFFFFF - Fond cartes / menu
+   #1E293B - Texte principal
+   #64748B - Texte secondaire
+   #E2E8F0 - Bordures / séparateurs
+   ======================================== */
+
+/* ========================================
+   ROOT
+   ======================================== */
+
+.root {
+    -fx-background-color: #F8FAFC;
+    -fx-font-family: "Segoe UI";
+}
+
+/* ========================================
+   HEADER
+   ======================================== */
+
+.header {
+    -fx-background-color: #1A2332;
+    -fx-padding: 0 24 0 24;
+    -fx-alignment: center-left;
+    -fx-min-height: 60;
+}
+
+.header-title {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+    -fx-text-fill: #FFFFFF;
+}
+
+/* Sous-titre de l'header (ex: "OUTIL D'AIDE À LA DÉCISION") */
+.header-subtitle {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 9;
+    -fx-text-fill: #94A3B8;
+    -fx-font-weight: normal;
+}
+
+/* ========================================
+   BOUTONS D'ONGLETS (navigation header)
+   ======================================== */
+
+.button-onglet {
+    -fx-padding: 7 16 7 16;
+    -fx-font-size: 12;
+    -fx-cursor: hand;
+    -fx-background-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-border-color: transparent;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-font-family: "Segoe UI";
+}
+
+.button-onglet:hover {
+    -fx-text-fill: #FFFFFF;
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+}
+
+.button-onglet-actif {
+    -fx-padding: 7 16 7 16;
+    -fx-font-size: 12;
+    -fx-cursor: hand;
+    -fx-background-color: #2563EB;
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-font-family: "Segoe UI";
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.4), 8, 0, 0, 2);
+}
+
+/* ========================================
+   MENU GAUCHE / FILTRES
+   ======================================== */
+
+.menu {
+    -fx-padding: 20 16 16 16;
+    -fx-spacing: 0;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent #E2E8F0 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.menu-title {
+    -fx-font-size: 13;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+    -fx-padding: 0 0 2 0;
+    -fx-font-family: "Segoe UI";
+}
+
+.menu-subtitle {
+    -fx-font-size: 10;
+    -fx-text-fill: #94A3B8;
+    -fx-padding: 0 0 14 0;
+    -fx-wrap-text: true;
+    -fx-font-family: "Segoe UI";
+}
+
+.filter-section-title {
+    -fx-font-size: 10;
+    -fx-font-weight: bold;
+    -fx-text-fill: #94A3B8;
+    -fx-padding: 12 0 6 0;
+    -fx-font-family: "Segoe UI";
+}
+
+.filter-row {
+    -fx-alignment: center-left;
+    -fx-spacing: 6;
+    -fx-padding: 3 0 3 0;
+}
+
+.filter-label {
+    -fx-font-size: 11;
+    -fx-text-fill: #334155;
+    -fx-font-family: "Segoe UI";
+}
+
+.filter-combo {
+    -fx-font-size: 11;
+    -fx-min-width: 200;
+    -fx-pref-width: 218;
+    -fx-padding: 5 8 5 8;
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-font-family: "Segoe UI";
+}
+
+.filter-combo:focused {
+    -fx-border-color: #2563EB;
+}
+
+.filter-checkbox {
+    -fx-font-size: 11;
+    -fx-text-fill: #334155;
+    -fx-padding: 3 0 3 0;
+    -fx-font-family: "Segoe UI";
+}
+
+/* ========================================
+   BOUTONS D'ACTION (menu gauche)
+   ======================================== */
+
+.button-apply {
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+    -fx-background-color: #2563EB;
+    -fx-text-fill: #FFFFFF;
+    -fx-cursor: hand;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-min-width: 100%;
+    -fx-padding: 10 12 10 12;
+    -fx-font-family: "Segoe UI";
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.3), 6, 0, 0, 2);
+}
+
+.button-apply:hover {
+    -fx-background-color: #1D4ED8;
+}
+
+.button-apply:pressed {
+    -fx-background-color: #1E40AF;
+    -fx-effect: none;
+}
+
+.button-reset {
+    -fx-font-size: 11;
+    -fx-background-color: transparent;
+    -fx-text-fill: #64748B;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-min-width: 100%;
+    -fx-padding: 8 12 8 12;
+    -fx-font-family: "Segoe UI";
+}
+
+.button-reset:hover {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #334155;
+}
+
+.button-reset:pressed {
+    -fx-background-color: #E2E8F0;
+}
+
+/* ========================================
+   ONGLETS COMMUNS
+   ======================================== */
+
+.onglet-fond {
+    -fx-background-color: #F8FAFC;
+    -fx-background: #F8FAFC;
+}
+
+.onglet-titre {
+    -fx-font-size: 22;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+    -fx-font-family: "Segoe UI";
+}
+
+.onglet-sous-titre {
+    -fx-font-size: 12;
+    -fx-text-fill: #64748B;
+    -fx-font-family: "Segoe UI";
+}
+
+/* ========================================
+   GRAPHIQUES — carte blanche avec ombre
+   ======================================== */
+
+.chart-node {
+    -fx-pref-height: 340;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.06), 10, 0, 0, 2);
+    -fx-padding: 8;
+}
+
+/* ========================================
+   ONGLET RAPPORTS
+   ======================================== */
+
+.rapport-titre {
+    -fx-font-size: 26;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+    -fx-font-family: "Segoe UI";
+}
+
+.rapport-soustitre {
+    -fx-font-size: 12;
+    -fx-text-fill: #64748B;
+    -fx-font-family: "Segoe UI";
+}
+
+.rapport-section-titre {
+    -fx-font-size: 16;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+    -fx-padding: 14 0 6 0;
+    -fx-font-family: "Segoe UI";
+}
+
+.rapport-texte {
+    -fx-font-size: 12;
+    -fx-text-fill: #475569;
+    -fx-line-spacing: 2;
+    -fx-font-family: "Segoe UI";
+}
+
+.rapport-def-terme {
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+    -fx-font-family: "Segoe UI";
+}
+
+.rapport-def-desc {
+    -fx-font-size: 11;
+    -fx-text-fill: #64748B;
+    -fx-font-family: "Segoe UI";
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.footer {
+    -fx-background-color: #1A2332;
+    -fx-padding: 10 24 10 24;
+    -fx-alignment: center-left;
+    -fx-min-height: 36;
+}
+
+.footer-label {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 10;
+    -fx-text-fill: #64748B;
+}
+
+.footer-label-right {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 10;
+    -fx-font-weight: bold;
+    -fx-text-fill: #94A3B8;
+}
+
+/* ========================================
+   SÉPARATEURS
+   ======================================== */
+
+.separator *.line {
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 1;
+    -fx-background-color: #E2E8F0;
+}
+
+.separator-vertical {
+    -fx-min-width: 1;
+    -fx-background-color: #E2E8F0;
+}
+
+.separator-horizontal {
+    -fx-min-height: 1;
+    -fx-background-color: #E2E8F0;
+}

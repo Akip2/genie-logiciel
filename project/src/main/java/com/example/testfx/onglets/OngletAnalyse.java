@@ -1,9 +1,11 @@
 package com.example.testfx.onglets;
 
-import com.example.testfx.chart.BarChartSecteur;
 import com.example.testfx.chart.ChartManager;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -21,37 +23,43 @@ public class OngletAnalyse implements Onglet {
 
     @Override
     public Pane getContenu() {
-        VBox contenu = new VBox();
+        Label titre = new Label("📊 Analyse des accidents du travail");
+        titre.getStyleClass().add("onglet-titre");
+
+        Node chartSecteur    = chartManager.getBarChartSecteur().getNode();
+        Node chartEvolution  = chartManager.getLineChartEvolution().getNode();
+        Node chartRepartition = chartManager.getPieChartRepartition().getNode();
+        Node chartCauses     = chartManager.getStackedBarChartCauses().getNode();
+
+        HBox row1 = creerLigne(chartSecteur, chartEvolution);
+        HBox row2 = creerLigne(chartRepartition, chartCauses);
+
+        VBox contenu = new VBox(15, titre, new Separator(), row1, row2);
         contenu.setPadding(new Insets(20));
-        contenu.setSpacing(15);
-        contenu.setStyle("-fx-background-color: #F0F4F8;");
+        contenu.getStyleClass().add("onglet-fond");
+        VBox.setVgrow(row1, Priority.ALWAYS);
+        VBox.setVgrow(row2, Priority.ALWAYS);
 
-        Label titre = new Label("📊 Onglet Analyse");
-        titre.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2C3E50;");
-
-        Label description = new Label("Contenu des graphiques et statistiques sera affiché ici");
-        description.setStyle("-fx-font-size: 12; -fx-text-fill: #7F8C8D;");
-
-
-        BarChartSecteur test =  chartManager.getBarChartSecteur();
-        var chartNode = test.getNode();
-        
-        // Définir les tailles préférées et permettre la croissance
-        chartNode.setPrefHeight(400);
-        VBox.setVgrow(chartNode, Priority.ALWAYS);
-
-        contenu.getChildren().addAll(titre, description, chartNode);
         return contenu;
     }
 
-    @Override
-    public String getNom() {
-        return "Analyse";
+    /**
+     * Crée une ligne avec deux graphiques côte à côte.
+     */
+    private HBox creerLigne(Node gauche, Node droite) {
+        gauche.getStyleClass().add("chart-node");
+        droite.getStyleClass().add("chart-node");
+        HBox.setHgrow(gauche, Priority.ALWAYS);
+        HBox.setHgrow(droite, Priority.ALWAYS);
+
+        HBox ligne = new HBox(15, gauche, droite);
+        VBox.setVgrow(ligne, Priority.ALWAYS);
+        return ligne;
     }
 
     @Override
-    public String getId() {
-        return "analyse";
-    }
+    public String getNom() { return "Analyse"; }
+
+    @Override
+    public String getId() { return "analyse"; }
 }
-

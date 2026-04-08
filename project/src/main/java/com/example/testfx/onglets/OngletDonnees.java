@@ -1,43 +1,65 @@
 package com.example.testfx.onglets;
 
+import com.example.testfx.chart.ChartManager;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
- * Onglet Données - Affiche les données brutes
+ * Onglet Données - Affiche les graphiques avancés
  */
 public class OngletDonnees implements Onglet {
 
+    private final ChartManager chartManager;
+
+    public OngletDonnees(ChartManager chartManager) {
+        this.chartManager = chartManager;
+    }
+
     @Override
     public Pane getContenu() {
-        VBox contenu = new VBox();
+        Label titre = new Label("📈 Graphiques Avancés");
+        titre.getStyleClass().add("onglet-titre");
+
+        Node chartTopNaf     = chartManager.getBarChartTopNaf().getNode();
+        Node chartRisque     = chartManager.getScatterChartRisque().getNode();
+        Node chartComparaison = chartManager.getBarChartComparaison().getNode();
+        Node chartTopCauses  = chartManager.getBarChartTopCauses().getNode();
+
+        HBox row1 = creerLigne(chartTopNaf, chartRisque);
+        HBox row2 = creerLigne(chartComparaison, chartTopCauses);
+
+        VBox contenu = new VBox(15, titre, new Separator(), row1, row2);
         contenu.setPadding(new Insets(20));
-        contenu.setSpacing(15);
-        contenu.setStyle("-fx-background-color: #F0F4F8;");
+        contenu.getStyleClass().add("onglet-fond");
+        VBox.setVgrow(row1, Priority.ALWAYS);
+        VBox.setVgrow(row2, Priority.ALWAYS);
 
-        Label titre = new Label("📋 Onglet Données");
-        titre.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #2C3E50;");
-
-        Label description = new Label("Liste des données brutes et tableau");
-        description.setStyle("-fx-font-size: 12; -fx-text-fill: #7F8C8D;");
-
-        Label placeholder = new Label("[TableView avec les accidents du travail...]");
-        placeholder.setStyle("-fx-font-size: 14; -fx-text-fill: #95A5A6; -fx-padding: 40;");
-
-        contenu.getChildren().addAll(titre, description, placeholder);
         return contenu;
     }
 
-    @Override
-    public String getNom() {
-        return "Données";
+    /**
+     * Crée une ligne avec deux graphiques côte à côte.
+     */
+    private HBox creerLigne(Node gauche, Node droite) {
+        gauche.getStyleClass().add("chart-node");
+        droite.getStyleClass().add("chart-node");
+        HBox.setHgrow(gauche, Priority.ALWAYS);
+        HBox.setHgrow(droite, Priority.ALWAYS);
+
+        HBox ligne = new HBox(15, gauche, droite);
+        VBox.setVgrow(ligne, Priority.ALWAYS);
+        return ligne;
     }
 
     @Override
-    public String getId() {
-        return "donnees";
-    }
+    public String getNom() { return "Données"; }
+
+    @Override
+    public String getId() { return "donnees"; }
 }
-

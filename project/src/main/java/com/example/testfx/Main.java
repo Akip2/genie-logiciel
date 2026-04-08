@@ -1,12 +1,12 @@
 package com.example.testfx;
 
-import com.example.testfx.chart.BarChartSecteur;
 import com.example.testfx.chart.ChartManager;
 import com.example.testfx.data.DataRepository;
 import com.example.testfx.dto.FilterRequest;
 import com.example.testfx.onglets.*;
 import javafx.application.Application;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -18,50 +18,46 @@ import java.util.stream.Collectors;
 
 public class Main extends Application {
 
+    // Valeurs par défaut des filtres
+    private static final String       NAF_PAR_DEFAUT        = "CTN";
+    private static final String       INDICATEUR_PAR_DEFAUT = "atPremierReglement";
+    private static final List<String> NIVEAUX_NAF           = Arrays.asList("CTN", "NAF38", "NAF2");
+    private static final List<String> INDICATEURS           = Arrays.asList(
+            "atPremierReglement", "nombreSalaries", "heuresTravaillees",
+            "journeesIT", "deces", "nouvellesIP", "indiceFrequence", "tauxGravite"
+    );
+
     private DataRepository dataRepository;
-    private ChartManager chartManager;
-    private List<Onglet> onglets;
-    private Onglet ongletActuel;
-    private BorderPane root;
-    private VBox contentContainer;
-    
-    // Contrôles de filtre
+    private ChartManager   chartManager;
+    private List<Onglet>   onglets;
+    private Onglet         ongletActuel;
+
+    // Composants utilisés plusieurs fois
+    private VBox              contentContainer;
+    private HBox              navigationBox;
     private ComboBox<Integer> comboAnnee;
-    private VBox secteurCheckboxes;
-    private ComboBox<String> comboNAF;
-    private ComboBox<String> comboIndicateur;
+    private VBox              secteurCheckboxes;
+    private ComboBox<String>  comboNAF;
+    private ComboBox<String>  comboIndicateur;
 
     @Override
     public void start(Stage stage) throws Exception {
-        // Chargement des données
         dataRepository = new DataRepository();
         dataRepository.chargerDossier("data");
 
         chartManager = new ChartManager(dataRepository);
 
-        // Initialisation des onglets
         onglets = Arrays.asList(
                 new OngletAnalyse(chartManager),
-                new OngletDonnees(),
+                new OngletDonnees(chartManager),
                 new OngletRapports()
         );
         ongletActuel = onglets.getFirst();
 
-        // Initialiser les graphiques avec les filtres par défaut
-        List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
-        int anneeParDefaut = anneesDispo.getLast();
-        FilterRequest requestParDefaut = new FilterRequest.Builder()
-                .year(anneeParDefaut)
-                .selectedCTNs(Arrays.asList("AA - Métallurgie", "EE - Chimie, caoutchouc, plasturgies", "GG - Commerces non alimentaires"))
-                .nafLevel("CTN")
-                .indicator("atPremierReglement")
-                .build();
-        chartManager.updateAll(requestParDefaut);
+        chartManager.updateAll(construireFilterRequest());
 
-        // Construction de l'interface
-        root = new BorderPane();
+        BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
-
         root.setTop(construireHeader());
         root.setLeft(construireMenu());
         root.setCenter(construireContenu());
@@ -74,285 +70,208 @@ public class Main extends Application {
         stage.show();
     }
 
-    /**
-     * Construit le header avec les boutons d'onglets
-     */
+    // -------------------------------------------------------------------------
+    // Construction de l'interface
+    // -------------------------------------------------------------------------
+
     private HBox construireHeader() {
-        HBox header = new HBox();
-        header.getStyleClass().add("header");
-        header.setSpacing(15);
-        header.setPadding(new Insets(10, 20, 10, 20));
-        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-        Label titre = new Label("Projet Genie Logiciel");
+        Label titre = new Label("Projet Génie Logiciel");
         titre.getStyleClass().add("header-title");
-        HBox.setHgrow(titre, Priority.ALWAYS);
 
-        // Boutons d'onglets
-        HBox navigationBox = new HBox();
-        navigationBox.setSpacing(10);
+        Label sousTitre = new Label("OUTIL D'AIDE À LA DÉCISION — RISQUES PROFESSIONNELS");
+        sousTitre.getStyleClass().add("header-subtitle");
 
+        VBox titreBox = new VBox(2, titre, sousTitre);
+        titreBox.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(titreBox, Priority.ALWAYS);
+
+        navigationBox = new HBox(6);
+        navigationBox.setAlignment(Pos.CENTER_RIGHT);
         for (Onglet onglet : onglets) {
-            Button btn = new Button(onglet.getNom());
-            btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand;");
-            
-            if (onglet == ongletActuel) {
-                btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand; -fx-background-color: #FFFFFF; -fx-text-fill: #3498DB; -fx-font-weight: bold;");
-            }
-
-            btn.setOnAction(e -> changerOnglet(onglet));
-            navigationBox.getChildren().add(btn);
+            navigationBox.getChildren().add(creerBoutonOnglet(onglet));
         }
 
-        header.getChildren().addAll(titre, navigationBox);
+        HBox header = new HBox(20, titreBox, navigationBox);
+        header.getStyleClass().add("header");
+        header.setAlignment(Pos.CENTER_LEFT);
         return header;
     }
 
-    /**
-     * Construit le menu de filtres à gauche
-     */
+    private Button creerBoutonOnglet(Onglet onglet) {
+        Button btn = new Button(onglet.getNom());
+        btn.getStyleClass().add(onglet == ongletActuel ? "button-onglet-actif" : "button-onglet");
+        btn.setOnAction(e -> changerOnglet(onglet));
+        return btn;
+    }
+
     private VBox construireMenu() {
-        VBox menu = new VBox();
-        menu.getStyleClass().add("menu");
-        menu.setSpacing(0);
-        menu.setPrefWidth(250);
-
-        // Titre du menu
-        Label titreMenu = new Label("Paramètres d'analyse");
-        titreMenu.getStyleClass().add("menu-title");
-
-        // Description
-        Label descriptionMenu = new Label("Ajustez les critères pour explorer les données selon vos besoins");
-        descriptionMenu.getStyleClass().add("menu-subtitle");
-
-        // Séparateur
-        Separator sep1 = new Separator();
-
-        // ANNÉE DE RÉFÉRENCE
-        Label anneeSection = new Label("ANNÉE DE RÉFÉRENCE");
-        anneeSection.getStyleClass().add("filter-section-title");
-
-        HBox annee = new HBox();
-        annee.getStyleClass().add("filter-row");
-
-        comboAnnee = new ComboBox<>();
-        comboAnnee.getStyleClass().add("filter-combo");
-        List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
-        comboAnnee.getItems().addAll(anneesDispo);
-        comboAnnee.setValue(anneesDispo.getLast());
+        // Année
+        comboAnnee = creerComboFiltre();
+        comboAnnee.getItems().addAll(dataRepository.getAnneesDisponibles());
+        comboAnnee.setValue(dataRepository.getAnneesDisponibles().getLast());
         comboAnnee.setPromptText("Choisir une année");
 
-        annee.getChildren().add(comboAnnee);
-
-        // SECTEUR CTN
-        Label secteurSection = new Label("SECTEUR CTN");
-        secteurSection.getStyleClass().add("filter-section-title");
-
-        secteurCheckboxes = new VBox();
-        secteurCheckboxes.setSpacing(2);
+        // Secteurs CTN (3 premiers cochés par défaut)
+        secteurCheckboxes = new VBox(2);
         secteurCheckboxes.setPadding(new Insets(0, 0, 5, 0));
-
-        List<String> CTNDispo = dataRepository.getListeCTN();
-        for (String ctn : CTNDispo) {
-            CheckBox checkBox = new CheckBox(ctn);
-            checkBox.getStyleClass().add("filter-checkbox");
-            if (ctn.equals("AA - Métallurgie") || ctn.equals("EE - Chimie, caoutchouc, plasturgies") || ctn.equals("GG - Commerces non alimentaires")) {
-                checkBox.setSelected(true);
-            }
-            secteurCheckboxes.getChildren().add(checkBox);
+        List<String> ctnDispo = dataRepository.getListeCTN();
+        for (int i = 0; i < ctnDispo.size(); i++) {
+            CheckBox cb = new CheckBox(ctnDispo.get(i));
+            cb.getStyleClass().add("filter-checkbox");
+            cb.setSelected(i < 3);
+            secteurCheckboxes.getChildren().add(cb);
         }
 
-        VBox secteurContainer = new VBox();
-        secteurContainer.setSpacing(2);
-        secteurContainer.getChildren().addAll(secteurCheckboxes);
-
-        // NIVEAU DE GRANULARITÉ
-        Label niveauSection = new Label("NIVEAU DE GRANULARITÉ");
-        niveauSection.getStyleClass().add("filter-section-title");
-
-        HBox niveauNAF = new HBox();
-        niveauNAF.getStyleClass().add("filter-row");
-
-        comboNAF = new ComboBox<>();
-        comboNAF.getStyleClass().add("filter-combo");
-        List<String> NAFDispo = Arrays.asList("CTN", "NAF38", "NAF2");
-        comboNAF.getItems().addAll(NAFDispo);
-        comboNAF.setValue(comboNAF.getItems().getFirst());
+        // Niveau NAF
+        comboNAF = creerComboFiltre();
+        comboNAF.getItems().addAll(NIVEAUX_NAF);
+        comboNAF.setValue(NAF_PAR_DEFAUT);
         comboNAF.setPromptText("Choisir un niveau NAF");
 
-        niveauNAF.getChildren().add(comboNAF);
-
-        // INDICATEUR MESURÉ
-        Label indicateurSection = new Label("INDICATEUR MESURÉ");
-        indicateurSection.getStyleClass().add("filter-section-title");
-
-        HBox indicateur = new HBox();
-        indicateur.getStyleClass().add("filter-row");
-
-        comboIndicateur = new ComboBox<>();
-        comboIndicateur.getStyleClass().add("filter-combo");
-        List<String> indicateurs = Arrays.asList("atPremierReglement", "nombreSalaries", "heuresTravaillees", "journeesIT", "deces", "nouvellesIP", "indiceFrequence", "tauxGravite");
-        comboIndicateur.getItems().addAll(indicateurs);
-        comboIndicateur.setValue(comboIndicateur.getItems().getFirst());
+        // Indicateur
+        comboIndicateur = creerComboFiltre();
+        comboIndicateur.getItems().addAll(INDICATEURS);
+        comboIndicateur.setValue(INDICATEUR_PAR_DEFAUT);
         comboIndicateur.setPromptText("Choisir un indicateur");
 
-        indicateur.getChildren().add(comboIndicateur);
+        // Boutons d'action
+        Button btnAppliquer = new Button("Mettre à jour l'analyse");
+        btnAppliquer.getStyleClass().add("button-apply");
+        btnAppliquer.setOnAction(e -> appliquerFiltres());
 
-        // Séparateur
-        Region separatorBas = new Region();
-        VBox.setVgrow(separatorBas, Priority.ALWAYS);
+        Button btnReinitialiser = new Button("Réinitialiser");
+        btnReinitialiser.getStyleClass().add("button-reset");
+        btnReinitialiser.setOnAction(e -> reinitialiserFiltres());
 
-        // Boutons
-        Button btnAppliquerFiltres = new Button("Mettre à jour l'analyse");
-        btnAppliquerFiltres.getStyleClass().add("button-apply");
-        btnAppliquerFiltres.setOnAction(e -> appliquerFiltres());
+        // Espaceur pour pousser les boutons en bas
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        Button btnRinitialiserFiltres = new Button("Réinitialiser");
-        btnRinitialiserFiltres.getStyleClass().add("button-reset");
-        btnRinitialiserFiltres.setOnAction(e -> reinitialiserFiltres());
-
-        // Assemblage du menu
-        menu.getChildren().addAll(
-                titreMenu,
-                descriptionMenu,
-                sep1,
-                anneeSection,
-                annee,
-                secteurSection,
-                secteurContainer,
-                niveauSection,
-                niveauNAF,
-                indicateurSection,
-                indicateur,
-                separatorBas,
-                btnAppliquerFiltres,
-                btnRinitialiserFiltres
+        VBox menu = new VBox(
+                creerLabel("Paramètres d'analyse", "menu-title"),
+                creerLabel("Ajustez les critères pour explorer les données selon vos besoins", "menu-subtitle"),
+                new Separator(),
+                creerLabel("ANNÉE DE RÉFÉRENCE", "filter-section-title"),
+                comboAnnee,
+                creerLabel("SECTEUR CTN", "filter-section-title"),
+                secteurCheckboxes,
+                creerLabel("NIVEAU DE GRANULARITÉ", "filter-section-title"),
+                comboNAF,
+                creerLabel("INDICATEUR MESURÉ", "filter-section-title"),
+                comboIndicateur,
+                spacer,
+                btnAppliquer,
+                btnReinitialiser
         );
-
+        menu.getStyleClass().add("menu");
+        menu.setPrefWidth(250);
         return menu;
     }
 
-    /**
-     * Construit le contenu central (adaptable selon l'onglet)
-     */
-    private Pane construireContenu() {
+    private VBox construireContenu() {
         contentContainer = new VBox();
-        contentContainer.setStyle("-fx-background-color: #F0F4F8;");
-        mettreAJourContenu();
+        contentContainer.getStyleClass().add("onglet-fond");
+        contentContainer.getChildren().add(ongletActuel.getContenu());
         return contentContainer;
     }
 
-    /**
-     * Met à jour le contenu central selon l'onglet actuel
-     */
-    private void mettreAJourContenu() {
-        contentContainer.getChildren().clear();
-        contentContainer.getChildren().add(ongletActuel.getContenu());
-    }
-
-    /**
-     * Change l'onglet actuel et met à jour l'affichage
-     */
-    private void changerOnglet(Onglet onglet) {
-        ongletActuel = onglet;
-        mettreAJourContenu();
-        mettreAJourHeaderButtons();
-    }
-
-    /**
-     * Met à jour le style des boutons d'onglets
-     */
-    private void mettreAJourHeaderButtons() {
-        // Récupérer le HBox de navigation du header
-        HBox header = (HBox) root.getTop();
-        HBox navigationBox = (HBox) header.getChildren().get(1);
-        
-        // Réinitialiser tous les boutons
-        for (int i = 0; i < navigationBox.getChildren().size(); i++) {
-            Button btn = (Button) navigationBox.getChildren().get(i);
-            if (onglets.get(i) == ongletActuel) {
-                btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand; -fx-background-color: #FFFFFF; -fx-text-fill: #3498DB; -fx-font-weight: bold;");
-            } else {
-                btn.setStyle("-fx-padding: 8 16 8 16; -fx-font-size: 12; -fx-cursor: hand;");
-            }
-        }
-    }
-
-    /**
-     * Construit le footer
-     */
     private HBox construireFooter() {
-        HBox footer = new HBox();
+        Label labelEquipe = new Label("Équipe : EL AOUDI · FONTANEZ · FUMERON–LECOMTE · KACHLER · MANGIN · PIERROT · SAHRAOUI DOUKKALI");
+        labelEquipe.getStyleClass().add("footer-label");
+        HBox.setHgrow(labelEquipe, Priority.ALWAYS);
+
+        Label labelProjet = new Label("PROJET UNIVERSITAIRE");
+        labelProjet.getStyleClass().add("footer-label-right");
+
+        HBox footer = new HBox(labelEquipe, labelProjet);
         footer.getStyleClass().add("footer");
-
-        Label footerLabel = new Label("Équipe : EL AOUDI · FONTANEZ · FUMERON–LECOMTE · KACHLER · MANGIN · PIERROT · SAHRAOUI DOUKKALI");
-        footerLabel.getStyleClass().add("footer-label");
-        footer.getChildren().add(footerLabel);
-
+        footer.setAlignment(Pos.CENTER_LEFT);
         return footer;
     }
 
-    /**
-     * Applique les filtres et met à jour les graphiques
-     */
-    private void appliquerFiltres() {
-        // Récupérer l'année sélectionnée
-        Integer anneeSelectionnee = comboAnnee.getValue();
-        
-        // Récupérer les CTN sélectionnées
-        List<String> ctnSelectionnees = secteurCheckboxes.getChildren().stream()
-                .filter(node -> node instanceof CheckBox)
-                .map(node -> (CheckBox) node)
-                .filter(CheckBox::isSelected)
-                .map(CheckBox::getText)
-                .collect(Collectors.toList());
-        
-        // Récupérer le niveau NAF
-        String nafLevel = comboNAF.getValue();
-        
-        // Récupérer l'indicateur
-        String indicator = comboIndicateur.getValue();
-        
-        // Créer la requête de filtre
-        FilterRequest request = new FilterRequest.Builder()
-                .year(anneeSelectionnee)
-                .selectedCTNs(ctnSelectionnees)
-                .nafLevel(nafLevel)
-                .indicator(indicator)
-                .build();
-        
-        // Mettre à jour tous les graphiques
-        chartManager.updateAll(request);
+    // -------------------------------------------------------------------------
+    // Helpers de construction
+    // -------------------------------------------------------------------------
+
+    /** Crée un ComboBox stylisé prêt à l'emploi. */
+    private <T> ComboBox<T> creerComboFiltre() {
+        ComboBox<T> combo = new ComboBox<>();
+        combo.getStyleClass().add("filter-combo");
+        return combo;
     }
 
-    /**
-     * Réinitialise les filtres à leurs valeurs par défaut
-     */
+    /** Crée un Label avec la classe CSS donnée. */
+    private Label creerLabel(String texte, String styleClass) {
+        Label label = new Label(texte);
+        label.getStyleClass().add(styleClass);
+        return label;
+    }
+
+    // -------------------------------------------------------------------------
+    // Logique des onglets
+    // -------------------------------------------------------------------------
+
+    private void changerOnglet(Onglet onglet) {
+        ongletActuel = onglet;
+
+        contentContainer.getChildren().clear();
+        contentContainer.getChildren().add(ongletActuel.getContenu());
+
+        for (int i = 0; i < onglets.size(); i++) {
+            Button btn = (Button) navigationBox.getChildren().get(i);
+            btn.getStyleClass().removeAll("button-onglet", "button-onglet-actif");
+            btn.getStyleClass().add(onglets.get(i) == ongletActuel ? "button-onglet-actif" : "button-onglet");
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Logique des filtres
+    // -------------------------------------------------------------------------
+
+    /** Construit un FilterRequest à partir de l'état actuel des contrôles. */
+    private FilterRequest construireFilterRequest() {
+        int annee = comboAnnee == null
+                ? dataRepository.getAnneesDisponibles().getLast()
+                : comboAnnee.getValue();
+
+        String naf        = comboNAF        == null ? NAF_PAR_DEFAUT        : comboNAF.getValue();
+        String indicateur = comboIndicateur == null ? INDICATEUR_PAR_DEFAUT : comboIndicateur.getValue();
+
+        List<String> ctnSelectionnees;
+        if (secteurCheckboxes == null) {
+            List<String> toutLesCTN = dataRepository.getListeCTN();
+            ctnSelectionnees = toutLesCTN.subList(0, Math.min(3, toutLesCTN.size()));
+        } else {
+            ctnSelectionnees = secteurCheckboxes.getChildren().stream()
+                    .filter(n -> n instanceof CheckBox)
+                    .map(n -> (CheckBox) n)
+                    .filter(CheckBox::isSelected)
+                    .map(CheckBox::getText)
+                    .collect(Collectors.toList());
+        }
+
+        return new FilterRequest.Builder()
+                .year(annee)
+                .selectedCTNs(ctnSelectionnees)
+                .nafLevel(naf)
+                .indicator(indicateur)
+                .build();
+    }
+
+    private void appliquerFiltres() {
+        chartManager.updateAll(construireFilterRequest());
+    }
+
     private void reinitialiserFiltres() {
-        // Réinitialiser l'année à la dernière année disponible
-        List<Integer> anneesDispo = dataRepository.getAnneesDisponibles();
-        comboAnnee.setValue(anneesDispo.getLast());
-        
-        // Réinitialiser les secteurs : sélectionner uniquement les 3 par défaut
-        secteurCheckboxes.getChildren().stream()
-                .filter(node -> node instanceof CheckBox)
-                .map(node -> (CheckBox) node)
-                .forEach(checkBox -> {
-                    String text = checkBox.getText();
-                    checkBox.setSelected(
-                            text.equals("AA - Métallurgie") || 
-                            text.equals("EE - Chimie, caoutchouc, plasturgies") || 
-                            text.equals("GG - Commerces non alimentaires")
-                    );
-                });
-        
-        // Réinitialiser le niveau NAF à "CTN"
-        comboNAF.setValue("CTN");
-        
-        // Réinitialiser l'indicateur au premier de la liste
-        comboIndicateur.setValue(comboIndicateur.getItems().getFirst());
-        
-        // Appliquer les filtres
+        comboAnnee.setValue(dataRepository.getAnneesDisponibles().getLast());
+        comboNAF.setValue(NAF_PAR_DEFAUT);
+        comboIndicateur.setValue(INDICATEUR_PAR_DEFAUT);
+
+        List<javafx.scene.Node> nodes = secteurCheckboxes.getChildren();
+        for (int i = 0; i < nodes.size(); i++) {
+            ((CheckBox) nodes.get(i)).setSelected(i < 3);
+        }
+
         appliquerFiltres();
     }
 

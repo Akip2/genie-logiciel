@@ -1,6 +1,6 @@
 package com.example.testfx.onglets;
 
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
 
 /**
  * Interface pour les onglets de l'application
@@ -9,7 +9,7 @@ public interface Onglet {
     /**
      * Retourne le contenu de l'onglet
      */
-    Pane getContenu();
+    Region getContenu();
 
     /**
      * Retourne le nom de l'onglet

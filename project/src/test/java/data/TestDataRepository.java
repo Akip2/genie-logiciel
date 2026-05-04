@@ -193,11 +193,9 @@ public class TestDataRepository {
 
     @Test
     public void test_chargerDossier_OK(){
-        try {
-            nonCharge.chargerDossier("src/test/resources");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        assertThrowsExactly(EmptyFileException.class, () -> {
+                nonCharge.chargerDossier("src/test/resources");
+            });
     }
 
     @Test

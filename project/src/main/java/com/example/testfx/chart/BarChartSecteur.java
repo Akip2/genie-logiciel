@@ -8,6 +8,7 @@ import com.example.testfx.service.IStatisticsService;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -24,6 +25,9 @@ import java.util.List;
  * Le plus accidentogene en haut, le moins en bas.
  */
 public class BarChartSecteur {
+
+    /** Limite du nombre de catégories affichées (sinon NAF38 a 38 lignes illisibles). */
+    private static final int LIMITE_AFFICHAGE = 10;
 
     private final JFreeChart jfreeChart;
     private final ChartViewer chartViewer;
@@ -59,30 +63,32 @@ public class BarChartSecteur {
     public void update(FilterRequest request) {
         dataset.clear();
 
-        List<AccidentTravail> donnees = filterService.applyBaseFilters(request);
-        List<SectorStat> stats = statsService.getStatsByCTN(request, donnees);
+            List<AccidentTravail> donnees = filterService.applyBaseFilters(request);
+            List<SectorStat> stats = statsService.getStatsByCTN(request, donnees);
 
-        // on ajoute du bas vers le haut (le plus grand en haut)
-        for (int i = stats.size() - 1; i >= 0; i--) {
-            SectorStat s = stats.get(i);
-            String libelle = tronquer(s.getLabel(), 30);
-            dataset.addValue(s.getValue(), "AT", libelle);
-        }
+            // top 10 max — au-delà, l'affichage devient illisible
+            int taille = Math.min(stats.size(), LIMITE_AFFICHAGE);
+            List<SectorStat> top = stats.subList(0, taille);
 
-        // maj titres
-        jfreeChart.setTitle("Classement des secteurs (" + request.getYear() + ")");
-        CategoryPlot plot = jfreeChart.getCategoryPlot();
-        plot.getRangeAxis().setLabel(getLabelIndicateur(request.getIndicator()));
+            // on ajoute du bas vers le haut (le plus grand en haut)
+            for (int i = top.size() - 1; i >= 0; i--) {
+                SectorStat s = top.get(i);
+                String libelle = tronquer(s.getLabel(), 30);
+                dataset.addValue(s.getValue(), "AT", libelle);
+            }
 
-        // couleurs par barre
-        BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        for (int i = 0; i < dataset.getColumnCount(); i++) {
-            renderer.setSeriesPaint(0, CouleursCauses.getCouleurCTN(0));
-        }
-        // MSD - on colore chaque barre individuellement
-        for (int col = 0; col < dataset.getColumnCount(); col++) {
+            // titre dynamique : précise quand on filtre au top 10
+            String suffixeTop = (stats.size() > LIMITE_AFFICHAGE)
+                    ? " — Top " + LIMITE_AFFICHAGE
+                    : "";
+            jfreeChart.setTitle("Classement des secteurs (" + request.getYear() + ")" + suffixeTop);
+
+            CategoryPlot plot = jfreeChart.getCategoryPlot();
+            plot.getRangeAxis().setLabel(getLabelIndicateur(request.getIndicator()));
+
+            // une seule couleur (bleu) pour toute la série, fini le code dupliqué
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
             renderer.setSeriesPaint(0, new Color(52, 152, 219));
-        }
     }
 
     private void styliserChart() {
@@ -91,13 +97,19 @@ public class BarChartSecteur {
         plot.setBackgroundPaint(new Color(245, 245, 245));
         plot.setRangeGridlinePaint(new Color(220, 220, 220));
 
-        // tooltips
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator());
+
+        // tooltip avec format français des nombres
+        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator(
+                StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING,
+                ChartUtils.getFormatFr()
+        ));
         renderer.setSeriesPaint(0, new Color(52, 152, 219));
         renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
 
-        // police axes
+        // format français + axe forcé à 0
+        ChartUtils.formaterAxeNumerique((NumberAxis) plot.getRangeAxis());
+
         Font fontAxe = new Font("SansSerif", Font.PLAIN, 11);
         plot.getDomainAxis().setTickLabelFont(fontAxe);
         plot.getRangeAxis().setTickLabelFont(fontAxe);

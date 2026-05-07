@@ -6,6 +6,7 @@ import com.example.testfx.service.IStatisticsService;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -105,10 +106,15 @@ public class BarChartTopCauses {
         plot.setRangeGridlinePaint(new Color(200, 200, 200));
 
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator());
+        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator(
+                StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING,
+                ChartUtils.getFormatFr()
+        ));
         renderer.setBarPainter(new StandardBarPainter());
         renderer.setSeriesPaint(0, new Color(192, 57, 43));
 
+        // format français + min à 0
+        ChartUtils.formaterAxeNumerique((NumberAxis) plot.getRangeAxis());
         Font fontAxe = new Font("SansSerif", Font.PLAIN, 10);
         plot.getDomainAxis().setTickLabelFont(fontAxe);
         plot.getRangeAxis().setTickLabelFont(fontAxe);

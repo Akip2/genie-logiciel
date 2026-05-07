@@ -8,6 +8,7 @@ import com.example.testfx.service.IStatisticsService;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.CategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -154,9 +155,15 @@ public class BarChartComparaison {
                 String indicateur = (String) ds.getColumnKey(col);
                 Double reel = valeursReelles.get(ctn + "|" + indicateur);
                 if (reel == null) return ctn;
-                return String.format("%s — %s : %.1f", ctn, indicateur, reel);
+                return String.format("%s — %s : %s", ctn, indicateur, ChartUtils.formater(reel));
             }
         });
+
+        // axe normalisé 0-100 : on borne explicitement
+        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+        ChartUtils.formaterAxeNumerique(rangeAxis);
+        rangeAxis.setLowerBound(0.0);
+        rangeAxis.setUpperBound(100.0);
 
         Font fontAxe = new Font("SansSerif", Font.PLAIN, 11);
         plot.getDomainAxis().setTickLabelFont(fontAxe);

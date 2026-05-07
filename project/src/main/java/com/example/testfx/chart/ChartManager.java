@@ -11,7 +11,7 @@ import java.util.List;
 public class ChartManager {
 
     private final BarChartSecteur barChartSecteur;
-    private final BarChartEvolution BarChartEvolution;
+    private final BarChartEvolution barChartEvolution;
     private final PieChartRepartition pieChartRepartition;
     private final StackedBarChartCauses stackedBarChartCauses;
     private final BarChartTopNaf barChartTopNaf;
@@ -33,7 +33,7 @@ public class ChartManager {
 
         // init des 8 graphiques
         this.barChartSecteur = new BarChartSecteur(statsService, filterService);
-        this.BarChartEvolution = new BarChartEvolution(statsService);
+        this.barChartEvolution = new BarChartEvolution(statsService);
         this.pieChartRepartition = new PieChartRepartition(statsService);
         this.stackedBarChartCauses = new StackedBarChartCauses(statsService);
         this.barChartTopNaf = new BarChartTopNaf(statsService);
@@ -51,7 +51,7 @@ public class ChartManager {
         List<String> ctnsEffectifs = (ctns != null && !ctns.isEmpty()) ? ctns : TOUS_CTN;
 
         barChartSecteur.update(request);
-        BarChartEvolution.update(ctnsEffectifs, request.getIndicator());
+        barChartEvolution.update(ctnsEffectifs, request.getIndicator());
         pieChartRepartition.update(request.getYear());
         stackedBarChartCauses.update(request.getYear(), ctnsEffectifs);
         scatterChartRisque.update(request.getYear());
@@ -72,7 +72,16 @@ public class ChartManager {
     // --- Getters pour Nathan ---
 
     public BarChartSecteur getBarChartSecteur() { return barChartSecteur; }
-    public BarChartEvolution getLineChartEvolution() { return BarChartEvolution; }
+    public BarChartEvolution getBarChartEvolution() { return barChartEvolution; }
+
+    /**
+     * @deprecated Le graphique d'évolution est désormais un grouped bar chart,
+     * pas un line chart. Utiliser {@link #getBarChartEvolution()}.
+     * Conservé temporairement pour ne pas casser OngletAnalyse de Nathan.
+     */
+    @Deprecated
+    public BarChartEvolution getLineChartEvolution() { return barChartEvolution; }
+
     public PieChartRepartition getPieChartRepartition() { return pieChartRepartition; }
     public StackedBarChartCauses getStackedBarChartCauses() { return stackedBarChartCauses; }
     public BarChartTopNaf getBarChartTopNaf() { return barChartTopNaf; }

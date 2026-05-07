@@ -5,6 +5,7 @@ import com.example.testfx.service.IStatisticsService;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
@@ -112,7 +113,7 @@ public class BarChartEvolution {
                     2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
                     1.0f, new float[]{6.0f, 4.0f}, 0.0f  // pointillés
             ));
-            marker.setLabel(String.format("Moyenne : %.0f", moyenne));
+            marker.setLabel("Moyenne : " + ChartUtils.formater(moyenne));
             marker.setLabelFont(new Font("SansSerif", Font.BOLD, 11));
             marker.setLabelPaint(COULEUR_MOYENNE);
             plot.addRangeMarker(marker);
@@ -126,9 +127,15 @@ public class BarChartEvolution {
         plot.setRangeGridlinePaint(new Color(200, 200, 200));
 
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator());
+        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator(
+                StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING,
+                ChartUtils.getFormatFr()
+        ));
         renderer.setBarPainter(new StandardBarPainter());
         renderer.setItemMargin(0.05);
+
+        // format français + min à 0
+        ChartUtils.formaterAxeNumerique((NumberAxis) plot.getRangeAxis());
 
         Font fontAxe = new Font("SansSerif", Font.PLAIN, 11);
         plot.getDomainAxis().setTickLabelFont(fontAxe);

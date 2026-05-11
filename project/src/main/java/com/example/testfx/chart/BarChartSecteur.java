@@ -9,7 +9,8 @@ import com.example.testfx.service.IStatisticsService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.labels.CategoryToolTipGenerator;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
@@ -19,6 +20,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * G1 - Bar chart horizontal : classement des secteurs CTN.
@@ -27,6 +30,9 @@ import java.util.List;
 public class BarChartSecteur {
 
     /** Limite du nombre de catégories affichées (sinon NAF38 a 38 lignes illisibles). */
+    /** Mapping libellé tronqué -> libellé complet, pour afficher le nom
+     *  entier du secteur dans le tooltip au survol. */
+    private final Map<String, String> libellesComplets = new HashMap<>();
     private static final int LIMITE_AFFICHAGE = 10;
 
     private final JFreeChart jfreeChart;
@@ -71,10 +77,14 @@ public class BarChartSecteur {
             List<SectorStat> top = stats.subList(0, taille);
 
             // on ajoute du bas vers le haut (le plus grand en haut)
+            // on mémorise aussi le libellé complet pour le tooltip
+            libellesComplets.clear();
             for (int i = top.size() - 1; i >= 0; i--) {
                 SectorStat s = top.get(i);
-                String libelle = tronquer(s.getLabel(), 30);
-                dataset.addValue(s.getValue(), "AT", libelle);
+                String libelleComplet = s.getLabel();
+                String libelleTronque = tronquer(libelleComplet, 30);
+                libellesComplets.put(libelleTronque, libelleComplet);
+                dataset.addValue(s.getValue(), "AT", libelleTronque);
             }
 
             // titre dynamique : précise quand on filtre au top 10
@@ -99,11 +109,16 @@ public class BarChartSecteur {
 
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
 
-        // tooltip avec format français des nombres
-        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator(
-                StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING,
-                ChartUtils.getFormatFr()
-        ));
+        // tooltip custom : affiche le libellé COMPLET (et pas la version tronquée)
+        renderer.setDefaultToolTipGenerator(new CategoryToolTipGenerator() {
+            @Override
+            public String generateToolTip(CategoryDataset ds, int row, int col) {
+                String keyTronquee = (String) ds.getColumnKey(col);
+                String libelleComplet = libellesComplets.getOrDefault(keyTronquee, keyTronquee);
+                Number valeur = ds.getValue(row, col);
+                return libelleComplet + " : " + ChartUtils.formater(valeur.doubleValue());
+            }
+        });
         renderer.setSeriesPaint(0, new Color(52, 152, 219));
         renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
 

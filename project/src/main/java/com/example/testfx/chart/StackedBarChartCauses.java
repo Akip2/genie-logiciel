@@ -7,7 +7,8 @@ import com.example.testfx.service.IStatisticsService;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.labels.CategoryToolTipGenerator;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.StackedBarRenderer;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+
 
 /**
  * G4 - Stacked bar chart : causes d'accidents par secteur
@@ -28,6 +31,8 @@ import java.util.Map;
  * Montre le profil de risque specifique de chaque secteur
  */
 public class StackedBarChartCauses {
+
+    private final Map<String, String> libellesComplets = new HashMap<>();
 
     private final JFreeChart jfreeChart;
     private final ChartViewer chartViewer;
@@ -88,9 +93,12 @@ public class StackedBarChartCauses {
         causeTriees.sort((a, b) -> totauxGlobaux.get(b) - totauxGlobaux.get(a));
 
         // remplir le dataset dans l'ordre trie
+        libellesComplets.clear();
         for (SectorCauses sc : donnees) {
             Map<CauseAccident, Integer> repartition = sc.repartitionCauses();
-            String libelleSecteur = tronquer(sc.libelleCTN(), 25);
+            String libelleSecteurComplet = sc.libelleCTN();
+            String libelleSecteur = tronquer(libelleSecteurComplet, 25);
+            libellesComplets.put(libelleSecteur, libelleSecteurComplet);
 
             int totalSecteur = repartition.values().stream()
                     .mapToInt(Integer::intValue).sum();
@@ -129,10 +137,17 @@ public class StackedBarChartCauses {
         plot.setRangeGridlinePaint(new Color(200, 200, 200));
 
         StackedBarRenderer renderer = (StackedBarRenderer) plot.getRenderer();
-        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator(
-                StandardCategoryToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT_STRING,
-                ChartUtils.getFormatFr()
-        ));
+        // tooltip custom : nom complet du secteur + cause + valeur
+        renderer.setDefaultToolTipGenerator(new CategoryToolTipGenerator() {
+            @Override
+            public String generateToolTip(CategoryDataset ds, int row, int col) {
+                String keyTronquee = (String) ds.getColumnKey(col);
+                String secteurComplet = libellesComplets.getOrDefault(keyTronquee, keyTronquee);
+                String cause = (String) ds.getRowKey(row);
+                Number valeur = ds.getValue(row, col);
+                return secteurComplet + " — " + cause + " : " + ChartUtils.formater(valeur.doubleValue());
+            }
+        });
         renderer.setBarPainter(new StandardBarPainter());
         renderer.setDrawBarOutline(false);
 

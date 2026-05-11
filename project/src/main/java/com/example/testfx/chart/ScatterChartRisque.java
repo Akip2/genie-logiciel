@@ -5,6 +5,7 @@ import com.example.testfx.service.IStatisticsService;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.annotations.XYTextAnnotation;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -16,6 +17,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -96,7 +98,17 @@ public class ScatterChartRisque {
 
         // taille des points
         XYItemRenderer renderer = plot.getRenderer();
-        renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator());
+
+        // tooltip format français
+        NumberFormat fmt = ChartUtils.getFormatFr();
+        renderer.setDefaultToolTipGenerator(new StandardXYToolTipGenerator(
+                StandardXYToolTipGenerator.DEFAULT_TOOL_TIP_FORMAT,
+                fmt, fmt
+        ));
+
+        // format FR sur les deux axes (on garde le zoom auto, pas de min à 0)
+        ChartUtils.formaterAxeNumeriqueSansForcerZero((NumberAxis) plot.getDomainAxis());
+        ChartUtils.formaterAxeNumeriqueSansForcerZero((NumberAxis) plot.getRangeAxis());
 
         Font fontAxe = new Font("SansSerif", Font.PLAIN, 11);
         plot.getDomainAxis().setTickLabelFont(fontAxe);

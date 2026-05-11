@@ -8,7 +8,9 @@ import com.example.testfx.service.IStatisticsService;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.labels.StandardCategoryToolTipGenerator;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.CategoryToolTipGenerator;
+import org.jfree.data.category.CategoryDataset;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
@@ -18,12 +20,20 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * G1 - Bar chart horizontal : classement des secteurs CTN.
  * Le plus accidentogene en haut, le moins en bas.
  */
 public class BarChartSecteur {
+
+    /** Limite du nombre de catégories affichées (sinon NAF38 a 38 lignes illisibles). */
+    /** Mapping libellé tronqué -> libellé complet, pour afficher le nom
+     *  entier du secteur dans le tooltip au survol. */
+    private final Map<String, String> libellesComplets = new HashMap<>();
+    private static final int LIMITE_AFFICHAGE = 10;
 
     private final JFreeChart jfreeChart;
     private final ChartViewer chartViewer;
@@ -59,30 +69,36 @@ public class BarChartSecteur {
     public void update(FilterRequest request) {
         dataset.clear();
 
-        List<AccidentTravail> donnees = filterService.applyBaseFilters(request);
-        List<SectorStat> stats = statsService.getStatsByCTN(request, donnees);
+            List<AccidentTravail> donnees = filterService.applyBaseFilters(request);
+            List<SectorStat> stats = statsService.getStatsByCTN(request, donnees);
 
-        // on ajoute du bas vers le haut (le plus grand en haut)
-        for (int i = stats.size() - 1; i >= 0; i--) {
-            SectorStat s = stats.get(i);
-            String libelle = tronquer(s.getLabel(), 30);
-            dataset.addValue(s.getValue(), "AT", libelle);
-        }
+            // top 10 max — au-delà, l'affichage devient illisible
+            int taille = Math.min(stats.size(), LIMITE_AFFICHAGE);
+            List<SectorStat> top = stats.subList(0, taille);
 
-        // maj titres
-        jfreeChart.setTitle("Classement des secteurs (" + request.getYear() + ")");
-        CategoryPlot plot = jfreeChart.getCategoryPlot();
-        plot.getRangeAxis().setLabel(getLabelIndicateur(request.getIndicator()));
+            // on ajoute du bas vers le haut (le plus grand en haut)
+            // on mémorise aussi le libellé complet pour le tooltip
+            libellesComplets.clear();
+            for (int i = top.size() - 1; i >= 0; i--) {
+                SectorStat s = top.get(i);
+                String libelleComplet = s.getLabel();
+                String libelleTronque = tronquer(libelleComplet, 30);
+                libellesComplets.put(libelleTronque, libelleComplet);
+                dataset.addValue(s.getValue(), "AT", libelleTronque);
+            }
 
-        // couleurs par barre
-        BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        for (int i = 0; i < dataset.getColumnCount(); i++) {
-            renderer.setSeriesPaint(0, CouleursCauses.getCouleurCTN(0));
-        }
-        // MSD - on colore chaque barre individuellement
-        for (int col = 0; col < dataset.getColumnCount(); col++) {
+            // titre dynamique : précise quand on filtre au top 10
+            String suffixeTop = (stats.size() > LIMITE_AFFICHAGE)
+                    ? " — Top " + LIMITE_AFFICHAGE
+                    : "";
+            jfreeChart.setTitle("Classement des secteurs (" + request.getYear() + ")" + suffixeTop);
+
+            CategoryPlot plot = jfreeChart.getCategoryPlot();
+            plot.getRangeAxis().setLabel(getLabelIndicateur(request.getIndicator()));
+
+            // une seule couleur (bleu) pour toute la série, fini le code dupliqué
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
             renderer.setSeriesPaint(0, new Color(52, 152, 219));
-        }
     }
 
     private void styliserChart() {
@@ -91,13 +107,24 @@ public class BarChartSecteur {
         plot.setBackgroundPaint(new Color(245, 245, 245));
         plot.setRangeGridlinePaint(new Color(220, 220, 220));
 
-        // tooltips
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setDefaultToolTipGenerator(new StandardCategoryToolTipGenerator());
+
+        // tooltip custom : affiche le libellé COMPLET (et pas la version tronquée)
+        renderer.setDefaultToolTipGenerator(new CategoryToolTipGenerator() {
+            @Override
+            public String generateToolTip(CategoryDataset ds, int row, int col) {
+                String keyTronquee = (String) ds.getColumnKey(col);
+                String libelleComplet = libellesComplets.getOrDefault(keyTronquee, keyTronquee);
+                Number valeur = ds.getValue(row, col);
+                return libelleComplet + " : " + ChartUtils.formater(valeur.doubleValue());
+            }
+        });
         renderer.setSeriesPaint(0, new Color(52, 152, 219));
         renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
 
-        // police axes
+        // format français + axe forcé à 0
+        ChartUtils.formaterAxeNumerique((NumberAxis) plot.getRangeAxis());
+
         Font fontAxe = new Font("SansSerif", Font.PLAIN, 11);
         plot.getDomainAxis().setTickLabelFont(fontAxe);
         plot.getRangeAxis().setTickLabelFont(fontAxe);
